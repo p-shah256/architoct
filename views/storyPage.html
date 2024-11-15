@@ -1,0 +1,20 @@
+{{define "storyPage"}}
+<div id="story" class="flex flex-row gap-6 py-3 text-text-muted text-sm">
+
+    <div class="title text-text-primary hover:underline font-bold text-lg">
+        {{.Title}}
+    </div>
+    <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
+        <div class="user">
+            via {{.User}}
+        </div>
+        <div id="timestamp" class="pl-4">
+            {{.TimeAgo}}
+        </div>
+        <div id="numberOfComments" class="pl-4 hover:underline" hx-get="/story/" hx-push-url="true"
+            hx-target="#storyPage">
+            {{.CommentCount}} comments
+        </div>
+    </div>
+</div>
+{{end}}

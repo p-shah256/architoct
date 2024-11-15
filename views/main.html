@@ -1,0 +1,53 @@
+{{ block "main" . }}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Architoct</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            base: '#ff4500',
+                            hover: '#ff5722',
+                            light: '#ff6b45',
+                            dark: '#cc3700',
+                        },
+                        background: {
+                            dark: '#000000',
+                            card: '#1a1a1b',
+                            hover: '#272729',
+                        },
+                        text: {
+                            primary: '#f87171',
+                            secondary: '#818384',
+                            muted: '#6E7578',
+                            link: '#4FBCFF',
+                        }
+                    },
+                    fontFamily: {
+                        'baskerville': ['Baskerville', 'serif'],
+                        'merriweather': ['Merriweather', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+    Count {{ .Count }}
+</html>
+{{ end }}
