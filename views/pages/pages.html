@@ -1,0 +1,21 @@
+{{ block "homeThreadPage" . }}
+    {{range .Stories}}
+            {{template "singleStoryBlock" .}}
+    {{end}}
+{{ end }}
+
+{{ block "storyThreadPage" . }}
+    {{template "singleStoryBlock" .}}
+    <div id="body">
+        {{ .Body }}
+    </div>
+    <!-- Comments Section -->
+    <div id="comments-section" class="flex flex-col gap-4 mt-6">
+        <div class="font-bold text-text-primary">
+            Discussions
+        </div>
+        {{ range .Comments }}
+        {{ template "singleComment" . }}
+        {{ end }}
+    </div>
+{{ end }}

@@ -16,7 +16,7 @@ func main() {
 
 	// Routes
 	e.GET("/", app.handleHome)
-	e.GET("/story", app.handleGetStory)
+	e.GET("/story/:id", app.handleGetStory)
 	e.POST("/vote/:id", app.handleVote)
 
 	// Start server

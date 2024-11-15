@@ -1,19 +1,21 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
+	"log/slog"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
 )
 
 func (app *App) handleHome(c echo.Context) error {
 	data := PageData{
 		Stories: app.store.GetAllStories(),
 	}
-	return c.Render(200, "index", data)
+	return c.Render(200, "baseLayout", data)
 }
 
 func (app *App) handleGetStory(c echo.Context) error {
-	idStr := c.QueryParam("id")
+	idStr := c.Param("id")  // Changed from QueryParam to Param
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.String(400, "Invalid story ID")
@@ -24,7 +26,8 @@ func (app *App) handleGetStory(c echo.Context) error {
 		return c.String(404, "Story not found")
 	}
 
-	return c.Render(200, "storyPageBlock", story)
+	slog.Info("sending this story", "story", story)
+	return c.Render(200, "storyThreadPage", story)
 }
 
 func (app *App) handleVote(c echo.Context) error {
