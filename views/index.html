@@ -1,3 +1,4 @@
+{{ block "index" . }}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -49,14 +50,63 @@
 
 <body id="home" class="flex justify-center w-full bg-background-dark">
 
-    <div id="homeContent" class="flex flex-col py-4" >
-        {{range .Stories}}
-        {{template "story" .}}
-        {{end}}
+    <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
+    <!--so this passes into block count the exact same object that it got--------->
+    <!--like saying just pass in stories from the input into template--------->
+    <div id="homeContent" class="flex flex-col py-4">
+            {{range .Stories}}
+                <div id="story-{{.ID}}" class="flex flex-row gap-6 py-3 text-text-muted text-sm">
+                    {{template "homeStoryBlock" .}}
+                </div>
+            {{end}}
     </div>
-
-    <div id="storyPage"> </div>
 
 </body>
 
 </html>
+{{ end }}
+
+{{ block "storyPageBlock" . }}
+<div class="title text-text-primary hover:underline font-bold text-lg">
+    {{template "homeStoryBlock" .}}
+    COMMENTS
+    COMMENTS
+    COMMENTS
+    COMMENTS
+    COMMENTS
+    COMMENTS
+</div>
+{{ end }}
+
+{{ block "homeStoryBlock" . }}
+<!-- Upvote section -->
+<div id="upvoteMarker" class="flex flex-col items-center">
+    <div class="cursor-pointer w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[10px] border-gray-400 hover:border-b-gray-600"
+        hx-post="/vote/{{.ID}}" hx-trigger="click" hx-swap="innerHTML" hx-target="next">
+    </div>
+    <!-- Vote count -->
+    <div class="py-2">
+        {{.VoteCount}}
+    </div>
+</div>
+
+<!-- data content -->
+<div id="data" class="flex flex-col">
+
+    <div class="title text-text-primary hover:underline font-bold text-lg">
+        {{.Title}}
+    </div>
+    <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
+        <div class="user">
+            via {{.User}}
+        </div>
+        <div id="timestamp" class="pl-4">
+            {{.TimeAgo}}
+        </div>
+        <div id="numberOfComments" class="pl-4 hover:underline" hx-get="/story" hx-push-url="true"
+            hx-target="#inside">
+            {{.CommentCount}} comments
+        </div>
+    </div>
+</div>
+{{end}}
