@@ -1,10 +1,15 @@
 {{ block "singleStoryBlock" . }}
 
-<div id="story-{{.ID}}" class="flex flex-row gap-6 py-3 text-text-muted text-sm">
+<div id="story-{{.ID}}" class="flex flex-row gap-6 py-3 text-gray-500 text-sm">
     <!-- Upvote section -->
     <div id="upvoteMarker" class="flex flex-col items-center">
-        <div class="cursor-pointer w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[10px] border-gray-400 hover:border-b-gray-600"
-            hx-post="/vote/{{.ID}}" hx-trigger="click" hx-swap="innerHTML" hx-target="next">
+        <div
+            class="w-0 h-0 border-8 border-transparent border-b-gray-400 hover:border-b-gray-600 cursor-pointer"
+            hx-post="/vote/{{.ID}}"
+            hx-trigger="click"
+            hx-swap="innerHTML"
+            hx-target="next"
+        >
         </div>
         <!-- Vote count -->
         <div class="py-2">
@@ -19,10 +24,7 @@
         </div>
         <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
             <div class="user">
-                via {{.User}}
-            </div>
-            <div id="timestamp" class="pl-4">
-                {{.TimeAgo}}
+                via {{.User}} {{.TimeAgo}}
             </div>
             <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer" hx-get="/story/{{.ID}}" hx-push-url="true"
                 hx-target="#inside" hx-trigger="click">
@@ -39,6 +41,15 @@
 
 <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
     <!-- Comment Content -->
+
+    <div class="flex items-center gap-2 text-text-muted">
+        <button class="hover:text-text-primary transition-colors duration-200" hx-post="/upvote/{{.ID}}" hx-trigger="click" hx-swap="outerHTML">
+            <sl-icon name="caret-up-fill" class="h-4 w-4"></sl-icon>
+        </button>
+        <span class="text-sm">{{.VoteCount}}</span>
+    </div>
+
+
     <div id="comment-{{.ID}}-user-{{.ID}}" class="text-text-muted">
         {{.User}} | {{.TimeAgo}}
     </div>

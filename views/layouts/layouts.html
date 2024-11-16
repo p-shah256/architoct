@@ -7,14 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Architoct</title>
+
+    <!-- Essential Scripts & Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/themes/dark.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/shoelace-autoloader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap"
-        rel="stylesheet">
+
+    <!-- TODO: I HATE THIS Shoelace custom properties to match your dark theme -->
+    <style>
+      :root {
+        /* Input borders and backgrounds */
+        --sl-panel-background-color: #1a1a1b;
+        --sl-input-background-color: #1a1a1b;
+        --sl-input-border-color: #272729;
+
+        /* Focus states */
+        --sl-color-primary-600: #f87171;
+        --sl-input-focus-ring-color: #ff4500;
+
+        /* Text colors */
+        --sl-color-neutral-0: #ffffff;
+        --sl-input-color: #ffffff;
+        --sl-color-neutral-900: #000000;
+      }
+    </style>
+
     <script>
         tailwind.config = {
             theme: {
@@ -38,25 +57,39 @@
                             link: '#4FBCFF',
                         }
                     },
-                    fontFamily: {
-                        'baskerville': ['Baskerville', 'serif'],
-                        'merriweather': ['Merriweather', 'serif']
-                    }
                 }
             }
         }
     </script>
 </head>
 
+
+
 <body id="background" class="flex justify-center w-full bg-background-dark">
 
+{{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
     <!--like saying just pass in stories from the input into template--------->
-    <div id="inside" class="text-text-secondary flex flex-col py-4 px-4">
+    <div id="inside" class="text-text-secondary flex flex-col py-4 px-4 mt-28">
         {{ template "homeThreadPage" . }}
     </div>
 </body>
 
 </html>
+{{ end }}
+
+
+{{ block "headerBlock" . }}
+<header class="w-full p-6 bg-gradient-to-b from-red-500/20 to-transparent backdrop-blur-sm fixed top-0">
+    <div class="flex justify-between items-center max-w-5xl mx-auto">
+        <div class="flex flex-col">
+            <a href="/" class="group">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-text-primary to-primary-light bg-clip-text text-transparent tracking-wider transition-all duration-300 group-hover:from-primary-light group-hover:to-text-primary">
+                    <span class="font-normal">ARCHI</span><span>TOCT</span>
+                </h1>
+            </a>
+        </div>
+    </div>
+</header>
 {{ end }}

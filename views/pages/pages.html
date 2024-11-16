@@ -9,11 +9,29 @@
     <div id="body">
         {{ .Body }}
     </div>
+
     <!-- Comments Section -->
     <div id="comments-section" class="flex flex-col gap-4 mt-6">
+        <!-- add comment form -->
+        <form id="comment-form"
+              class="flex flex-col gap-3 p-4 rounded-lg bg-background-card"
+              hx-post="/api/comments"
+              hx-target="#comments-list"
+              hx-swap="afterbegin">
+            <sl-textarea
+                name="comment"
+                placeholder="What would you add?"
+                resize="auto"
+                required></sl-textarea>
+            <div class="flex justify-end">
+                <sl-button class="text-text-primary" variant="text" size="small">Post it!</sl-button>
+            </div>
+        </form>
+
         <div class="font-bold text-text-primary">
             Discussions
         </div>
+
         {{ range .Comments }}
         {{ template "singleComment" . }}
         {{ end }}

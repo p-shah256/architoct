@@ -7,24 +7,24 @@ func NewStoryStore() *StoryStore {
 		stories: []Story{
 			{
 				ID:           1,
-				Title:        "The Future of Microservices",
+				Title:        "The Future of Smart Cities",
 				VoteCount:    38,
-				User:         "sarah_dev",
+				User:         "architect_joe",
 				TimeAgo:      "3 hours ago",
 				CommentCount: 3,
-				Body: "Microservices have been a game-changer in the world of software development, offering flexibility, scalability, and better fault tolerance. As more organizations adopt microservice architectures, it's important to consider the future trends in this space. The growing adoption of containerization and Kubernetes will continue to shape the landscape, allowing for easier management of distributed systems. Additionally, the integration of AI and machine learning with microservices can enable smarter, more adaptive applications. However, as complexity increases, monitoring and managing these systems will become even more critical. It's essential to build the right tools and practices to address these challenges.",
+				Body: "Smart cities are the future of urban development, combining technology and sustainability to create more livable environments. With advancements in IoT (Internet of Things), cities can become more efficient, with better traffic management, waste disposal, and energy usage. As the adoption of AI-driven urban planning continues, we can expect to see more data-driven decisions that can improve public services. However, the challenge lies in ensuring privacy and security while implementing these technologies. Moreover, integrating green spaces and ensuring that the infrastructure is adaptable to climate change will be critical for long-term success.",
 				Comments: []Comment{
 					{
 						ID:        1,
-						Content:   "Microservices are great, but they come with a lot of complexity. Microservices are great, but they come with a lot of complexity.",
-						User:      "tech_guru",
+						Content:   "Smart cities are great, but the integration of technology is challenging, especially in older buildings.",
+						User:      "urban_planner",
 						TimeAgo:   "2 hours ago",
 						VoteCount: 5,
 						Replies: []Comment{
 							{
 								ID:        2,
-								Content:   "True, but tools like Kubernetes are making it easier.",
-								User:      "cloud_master",
+								Content:   "True, but retrofitting with newer tech solutions is becoming more cost-effective.",
+								User:      "tech_builder",
 								TimeAgo:   "1 hour ago",
 								VoteCount: 3,
 							},
@@ -32,8 +32,8 @@ func NewStoryStore() *StoryStore {
 					},
 					{
 						ID:        3,
-						Content:   "Monoliths are still valid for smaller teams!",
-						User:      "old_school_dev",
+						Content:   "Sustainability in architecture is key for future cities. Energy-efficient buildings should be prioritized.",
+						User:      "eco_architect",
 						TimeAgo:   "1 hour ago",
 						VoteCount: 8,
 					},
@@ -41,23 +41,23 @@ func NewStoryStore() *StoryStore {
 			},
 			{
 				ID:           2,
-				Title:        "Why Go is Great for Web Development",
+				Title:        "The Rise of Modular Construction and its rigidities are on the rise too",
 				VoteCount:    42,
-				User:         "gopher_pro",
+				User:         "modular_mike",
 				TimeAgo:      "5 hours ago",
 				CommentCount: 2,
 				Comments: []Comment{
 					{
 						ID:        4,
-						Content:   "Go's simplicity is what makes it shine for web apps.",
-						User:      "simplicity_fan",
+						Content:   "Modular construction can significantly speed up the building process and reduce costs.",
+						User:      "cost_saver",
 						TimeAgo:   "4 hours ago",
 						VoteCount: 10,
 					},
 					{
 						ID:        5,
-						Content:   "Agreed! The standard library is a huge plus.",
-						User:      "lib_lover",
+						Content:   "Agreed! The ability to assemble and disassemble parts easily is a game-changer.",
+						User:      "builder_bob",
 						TimeAgo:   "3 hours ago",
 						VoteCount: 7,
 					},
@@ -66,6 +66,7 @@ func NewStoryStore() *StoryStore {
 		},
 	}
 }
+
 
 // GetStory returns a story by ID
 func (s *StoryStore) GetStory(id int) (Story, bool) {
