@@ -19,15 +19,16 @@
 
     <!-- data content -->
     <div id="data" class="flex flex-col">
-        <div class="title text-text-primary hover:underline font-bold text-lg">
+        <div class="title text-text-primary hover:underline font-bold text-lg cursor-pointer"
+             hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
             {{.Title}}
         </div>
         <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
             <div class="user">
                 via {{.User}} {{.TimeAgo}}
             </div>
-            <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer" hx-get="/story/{{.ID}}" hx-push-url="true"
-                hx-target="#inside" hx-trigger="click">
+            <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer"
+                 hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
                 {{.CommentCount}} comments
             </div>
         </div>

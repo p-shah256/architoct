@@ -1,0 +1,6 @@
+* Tradeoffs we are making at this MVP stage
+1. user_id is just a browser fingerprint
+2. using mongo because
+   1. Atomicity is not so important
+   2. Consistency: eventual consistency is fine
+3. embedding the upvotes and comments into a single document. we will hit that 16mb pretty fast.
