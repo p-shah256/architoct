@@ -1,8 +1,6 @@
 package main
 
-import (
-	"html/template"
-)
+import "html/template"
 
 // Templates handles rendering of HTML templates
 type Templates struct {
@@ -15,6 +13,8 @@ type App struct {
 	templates *Templates
 }
 
+
+// TODO: change this to top20 stories or something or homestories
 // PageData wraps our data for the template
 type PageData struct {
 	Stories []Story
@@ -42,7 +42,9 @@ type Comment struct {
 	Replies []Comment
 }
 
+// TODO: WTF is this doing here?
 // StoryStore holds a collection of stories.
 type StoryStore struct {
 	stories []Story
 }
+

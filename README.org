@@ -4,3 +4,16 @@
    1. Atomicity is not so important
    2. Consistency: eventual consistency is fine
 3. embedding the upvotes and comments into a single document. we will hit that 16mb pretty fast.
+
+if this goes over 1k users we will have to completely refactor the backend here to follow hexagonal architecture
+
+
+* A TLDR guide to hexagonal architecture and why its Jr. engineers must understand it:
+Goal: we are trying to build something that atleast tries to follow SOLID principles - because they make lives of engineers really easy.
+1. Single resposiblity: each class should have one and only one resposiblity
+2. Open close: a class should be open for extension but closed for modification
+3. Liskov substitution: objects should be replaceable with instances/subtypes without altering correctness
+4. interface seg:
+5. Dependency inversion: depend on abstractions instead of concrete classes
+
+   (I dont get    all but heres what I mean mostly)
