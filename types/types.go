@@ -26,8 +26,9 @@ type Story struct {
 }
 
 // User represents a user identified by browser fingerprint
+// TODO: look into how this can be extended with auth
 type User struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	// ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Fingerprint string             `bson:"fingerprint"`
 	CreatedAt   time.Time          `bson:"created_at"`
 	LastLogin   time.Time          `bson:"last_login"`

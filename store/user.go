@@ -26,16 +26,17 @@ func (s *UserStore) GetOrCreate(ctx context.Context, fingerprint string) (*types
 	// Try to find existing user
 	var user types.User
 	err := s.users.FindOne(ctx, bson.M{"fingerprint": fingerprint}).Decode(&user)
+	// if found
 	if err == nil {
 		// Update last login
 		_, err = s.users.UpdateOne(ctx,
-			bson.M{"_id": user.ID},
+			bson.M{"fingerprint": fingerprint},
 			bson.M{"$set": bson.M{"last_login": time.Now()}},
 		)
 		return &user, err
 	}
 
-	// Create new user
+	// else Create new user
 	user = types.User{
 		Fingerprint: fingerprint,
 		CreatedAt:   time.Now(),
