@@ -45,7 +45,7 @@ db.createCollection('stories', {
           bsonType: 'array', // hashbased structure so retreival is O(1)
           items: { bsonType: 'string' }  // user_ids
         },
-        comment_count: { bsonType: 'int' },
+        reply_count: { bsonType: 'int' },
         replies: {
           bsonType: 'array',
           items: { bsonType: 'string' } // comment_ids
@@ -74,7 +74,7 @@ db.createCollection('comments', {
           bsonType: 'array', // hashbased structure so retreival is O(1)
           items: { bsonType: 'string' }  // user_ids
         },
-        comment_count: { bsonType: 'int' },
+        reply_count: { bsonType: 'int' },
         replies: { // stores comment ids here..
           bsonType: 'array',
           items: {bsonType: 'string'}

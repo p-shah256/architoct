@@ -10,7 +10,6 @@ import (
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // TYPE AND CREATE /////////////////////////////////////////////////////////////
@@ -30,35 +29,16 @@ func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) error
     return err
 }
 
-func (s *CommentStore) GetCommentsByPostID(ctx context.Context, postID string, limit int64, offset int64) ([]*types.Comment, error) {
-    opts := options.Find().
-        SetSort(bson.D{{Key: "created_at", Value: -1}}).
-        SetLimit(limit).
-        SetSkip(offset)
-
-	// TODO: MVP: do not need to do this
-	// 1. get the comment ids inside post
-	// 2. return all those comment ids
-	//
-	// REVIEW: cursor is like a stream of response
-	// 		   next returns one item and all returns all
-    cursor, err := s.comments.Find(ctx,
-        bson.M{
-            "post_id": postID,
-            "is_deleted": false,
-        },
-        opts,
-    )
+func (s *CommentStore) GetById(ctx context.Context, commentId string) (*types.Comment, error) {
+    var comment types.Comment
+    err := s.comments.FindOne(ctx, bson.M{"_id": commentId}).Decode(&comment)
     if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return nil, err
+        }
         return nil, err
     }
-    defer cursor.Close(ctx)
-
-    var comments []*types.Comment
-    if err = cursor.All(ctx, &comments); err != nil {
-        return nil, err
-    }
-    return comments, nil
+    return &comment, nil
 }
 
 func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {
