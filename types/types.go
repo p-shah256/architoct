@@ -66,7 +66,6 @@ type Comment struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	PostID      string             `bson:"post_id" json:"post_id"`
 	UserID      string             `bson:"user_id" json:"user_id"`
-	ParentID    *string            `bson:"parent_id,omitempty" json:"parent_id,omitempty"`
 	Body        string             `bson:"body" json:"body"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 	UpvoteCount int32              `bson:"upvote_count" json:"upvote_count"`

@@ -1,0 +1,15 @@
+* DB design
+
+** Predicted query patterns:
+1. get story (story_id) → story with 20 comments
+2. get topStories (20, Jesterday)
+3. get TopComments (20, story_id)
+4. get if_upvoted (user_id, story_id)
+5. get if_upvoted (user_id, post_id)
+
+
+a. POST story()
+b. POST comment()
+c. POST c_upvote(user_id, comment_id)
+c. POST s_upvote(user_id, story_id)
+

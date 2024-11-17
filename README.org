@@ -1,12 +1,74 @@
-* Tradeoffs we are making at this MVP stage
-1. user_id is just a browser fingerprint
-2. using mongo because
-   1. Atomicity is not so important
-   2. Consistency: eventual consistency is fine
-3. embedding the upvotes and comments into a single document. we will hit that 16mb pretty fast.
+* System Design
 
-if this goes over 1k users we will have to completely refactor the backend here to follow hexagonal architecture
-this is a simple structure to go forwards with
+
+** Database Decisions
+*** MongoDB as Primary Store
+**** Reasons
+- Query patterns favor document model (nested comments, embedded upvotes)
+- Eventual consistency acceptable for social features
+- No complex transactions needed
+- Easy horizontal scaling for future
+**** Concerns
+- 16MB document limit could be hit with high user engagement
+- May need migration strategy if social graph features added later
+
+
+** Data Modeling Decisions
+*** User Management
+- Using browser fingerprint as user_id for MVP
+- No authentication/sessions needed
+- Trade-off: Cannot prevent duplicate accounts
+
+*** Posts Collection
+- Embedded upvoted_by array instead of separate collection
+**** Benefits
+- Single query retrieves post with upvote status
+- Atomic updates for upvoting
+**** Concerns
+- Document growth with user scale
+- Need to monitor array size at >5k users
+
+*** Comments Structure
+- Parent comments as separate docs with EMBEDDED recursive replies
+**** Benefits
+- Single query retrieves full comment thread
+- No N+1 query problem for nested replies (really big issue, imagine a post with 100 comments and avg 5 nested comments... image the number of queries to db?)
+- Better read performance for thread views
+**** Concerns
+- Cannot paginate replies independently
+- Migration needed if reply chains grow too large
+
+
+** Performance Considerations
+*** Indexing Strategy
+- Compound index on {upvote_count, created_at} for top posts
+- Index on post_id for comment queries
+
+
+** Scale Limitations
+- Current design optimal for ~1-5k active users
+- Need refactoring at scale:
+ 1. Move to separate upvotes collection
+ 2. Implement proper user authentication
+ 3. Consider splitting comment threads
+ 4. Add caching layer for top posts
+
+
+** MVP Compromises
+- No user profiles/karma
+- No categories/tags
+- No downvotes
+- Simple fingerprint-based identification
+- Focus on core read patterns optimization
+
+
+
+
+
+
+
+
+
 #+BEGIN_SRC
 architoct/
 ├── internal/
@@ -24,6 +86,7 @@ architoct/
 
 HTMX -> Handler -> service -> relevant store -> MongoDB
 #+END_SRC
+
 
 * A TLDR guide to hexagonal architecture and why its Jr. engineers must understand it:
 Goal: we are trying to build something that atleast tries to follow SOLID principles - because they make lives of engineers really easy.
