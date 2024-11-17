@@ -1,14 +1,8 @@
 package types
 
 import (
-	"html/template"
 	"time"
 )
-
-// Templates handles rendering of HTML templates
-type Templates struct {
-	templates *template.Template
-}
 
 // NOTE: maybe external?
 // DB TYPES/////////////////////////////////////////////////////////////////////

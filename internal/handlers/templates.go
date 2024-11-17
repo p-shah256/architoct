@@ -1,5 +1,4 @@
-// templates.go
-package main
+package handlers
 
 import (
 	"html/template"
@@ -7,11 +6,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+// TemplateRenderer handles rendering of HTML templates
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
-func newTemplates() *Templates {
+func newTemplates() *TemplateRenderer {
 	// Create a new template instance
 	tmpl := template.New("")
 
@@ -29,7 +33,7 @@ func newTemplates() *Templates {
 		}
 	}
 
-	return &Templates{
+	return &TemplateRenderer{
 		templates: tmpl,
 	}
 }

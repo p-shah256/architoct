@@ -71,20 +71,82 @@
 
 #+BEGIN_SRC
 architoct/
+├── cmd/
+│   └── main.go            # Application entry point
+│
 ├── internal/
-│   ├── store/              # All MongoDB operations
-│   │   ├── post.go         # Basic CRUD
+│   ├── handlers/          # HTMX handlers & template rendering
+│   │   ├── story.go       # Story-related handlers
+│   │   ├── comment.go     # Comment-related handlers
+│   │   └── user.go        # User-related handlers
+│   │
+│   ├── services/          # Business logic + data operations
+│   │   ├── story.go       # Story business logic
+│   │   ├── comment.go     # Comment business logic
+│   │   └── user.go        # User business logic
+│   │
+│   ├── store/            # Direct MongoDB operations
+│   │   ├── story.go
 │   │   ├── comment.go
-│   │   ├── upvote.go
 │   │   └── user.go
 │   │
-│   ├── service/            # Business logic
-│   │   └── forum.go        # Single service with all operations
-│   │
-│   └── handler/            # HTMX handlers
-└── main.go
+│   └── types/            # Shared types/models
+│       └── types.go      # All MongoDB structs
+│
+├── web/                  # Templates and static files
+│   ├── templates/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   └── partials/
+│   └── static/
+│
+└── router.go            # URL routing
 
-HTMX -> Handler -> service -> relevant store -> MongoDB
+HTMX -> ROUTER -> handler -> service -> relevant store -> ACTUALDB
+#+END_SRC
+
+transform it to something like
+#+BEGIN_SRC
+architoct/
+├── cmd/
+│   └── main.go             # App entry point
+│
+├── internal/
+│   ├── core/               # Domain/Business Logic
+│   │   ├── entity/         # Core business entities
+│   │   │   ├── story.go
+│   │   │   └── comment.go
+│   │   │
+│   │   ├── ports/         # Interface definitions
+│   │   │   ├── driving/   # Primary ports (incoming)
+│   │   │   │   └── api.go # IStoryService, ICommentService etc.
+│   │   │   └── driven/    # Secondary ports (outgoing)
+│   │   │       ├── repository.go  # IStoryRepo, ICommentRepo
+│   │   │       └── cache.go       # ICachePort
+│   │   │
+│   │   └── service/       # Business logic implementations
+│   │       ├── story.go   # StoryService
+│   │       └── comment.go # CommentService
+│   │
+│   ├── adapters/          # Implementations of ports
+│   │   ├── primary/       # Driving adapters
+│   │   │   ├── htmx/     # HTMX handlers
+│   │   │   │   ├── story_handler.go
+│   │   │   │   └── comment_handler.go
+│   │   │   └── rest/     # REST handlers (if needed)
+│   │   │
+│   │   └── secondary/    # Driven adapters
+│   │       ├── mongo/    # MongoDB implementation
+│   │       │   ├── story_repo.go
+│   │       │   └── comment_repo.go
+│   │       └── redis/    # Redis cache implementation
+│   │
+│   └── config/           # Configuration
+│       └── config.go
+│
+├── pkg/                  # Public packages
+│   └── common/          # Shared utilities
+└── web/                 # Frontend assets
 #+END_SRC
 
 

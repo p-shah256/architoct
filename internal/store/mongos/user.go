@@ -1,10 +1,10 @@
-package store
+package mongos
 
 import (
 	"context"
 	"time"
 
-	"architoct/types"
+	"architoct/internal/types"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

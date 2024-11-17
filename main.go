@@ -27,10 +27,3 @@ func main() {
 	// Start server
 	e.Logger.Fatal(e.Start(":42069"))
 }
-
-func NewApp() *App {
-	return &App{
-		store:     NewStoryStore(),
-		templates: newTemplates(),
-	}
-}

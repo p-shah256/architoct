@@ -2,13 +2,13 @@
 // no abstraction for mvp -- eventually we could have a port called port store and then let 1. mongo implment it and then 2. dynamo and so on...
 // abstract away *mongo.Collection
 
-package store
+package mongos
 
 import (
 	"context"
 	"time"
 
-	"architoct/types"
+	"architoct/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
