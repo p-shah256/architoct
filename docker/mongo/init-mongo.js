@@ -59,7 +59,7 @@ db.createCollection('comments', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
-      required: ['user_id', 'body', 'created_at', 'title', 'post_id'], //_id will be auto
+      required: ['user_id', 'body', 'created_at', 'post_id'], //_id will be auto
       properties: {
         // COMMENT DATA -----------------------------------
         _id: {bsonType: 'string'},

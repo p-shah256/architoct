@@ -13,7 +13,7 @@
         </div>
         <!-- Vote count -->
         <div class="py-2">
-            {{.VoteCount}}
+            {{.UpvoteCount}}
         </div>
     </div>
 
@@ -25,11 +25,11 @@
         </div>
         <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
             <div class="user">
-                via {{.User}} {{.TimeAgo}}
+                via {{.UserID}} {{.TimeAgo}}
             </div>
             <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer"
                  hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
-                {{.CommentCount}} comments
+                {{.ReplyCount}} comments
             </div>
         </div>
     </div>

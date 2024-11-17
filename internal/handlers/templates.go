@@ -15,7 +15,7 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
-func newTemplates() *TemplateRenderer {
+func NewTemplates() *TemplateRenderer {
 	// Create a new template instance
 	tmpl := template.New("")
 

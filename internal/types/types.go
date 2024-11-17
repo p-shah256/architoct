@@ -24,6 +24,7 @@ type Story struct {
 	Title     string    `bson:"title"`
 	Body      string    `bson:"body"`
 	CreatedAt time.Time `bson:"created_at"`
+	TimeAgo   string
 
 	// Metadata
 	UpvoteCount int      `bson:"upvote_count,omitempty"`

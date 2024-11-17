@@ -6,9 +6,10 @@ package mongos
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"architoct/internal/types"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,7 +20,7 @@ type StoryStore struct {
 	stories *mongo.Collection
 }
 
-func NewPostStore(db *mongo.Database) *StoryStore {
+func NewStoryStore(db *mongo.Database) *StoryStore {
 	return &StoryStore{
 		stories: db.Collection("stories"),
 	}
@@ -42,38 +43,24 @@ func (s *StoryStore) GetByID(ctx context.Context, id string) (*types.Story, erro
 // GetRecent supports our homepage feed
 // limit: how many posts to fetch
 // timeRange: "hour", "day", "week" etc
-func (s *StoryStore) GetRecent(ctx context.Context, limit int64, timeRange string) ([]*types.Story, error) {
-	// Calculate time threshold based on range
-	threshold := time.Now()
-	switch timeRange {
-	case "hour":
-		threshold = threshold.Add(-1 * time.Hour)
-	case "day":
-		threshold = threshold.Add(-24 * time.Hour)
-	case "week":
-		threshold = threshold.Add(-7 * 24 * time.Hour)
-	}
+func (s *StoryStore) GetRecent(ctx context.Context, limit int64) ([]types.Story, error) {
+    // First, let's count total documents
+    opts := options.Find().
+        SetSort(bson.D{{Key: "upvote_count", Value: -1}}).
+        SetLimit(limit)
 
-	// Find posts with sorting
-	opts := options.Find().
-		SetSort(bson.D{{Key: "created_at", Value: -1}}).
-		SetSort(bson.D{{Key: "upvotes_count", Value: -1}}).
-		SetLimit(limit)
+    // Let's also print what a sample document looks like
+    cursor, err := s.stories.Find(ctx, bson.D{}, opts)
+    if err != nil {
+        return nil, fmt.Errorf("find error: %w", err)
+    }
+    defer cursor.Close(ctx)
 
-	cursor, err := s.stories.Find(ctx,
-		bson.M{"created_at": bson.M{"$gte": threshold}},
-		opts,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var posts []*types.Story
-	if err = cursor.All(ctx, &posts); err != nil {
-		return nil, err
-	}
-	return posts, nil
+    var posts []types.Story
+    if err = cursor.All(ctx, &posts); err != nil {
+        return nil, fmt.Errorf("cursor.All error: %w", err)
+    }
+    return posts, nil
 }
 
 // IncrementCommentCount updates comment count and adds comment ID

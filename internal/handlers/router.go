@@ -1,32 +1,31 @@
 package handlers
 
 import (
-    "github.com/labstack/echo/v4"
-    "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
-    "architoct/internal/service"
+	"architoct/internal/service"
 )
 
 type htmxHandler struct {
-    templates *TemplateRenderer
+    Templates *TemplateRenderer
     service *service.ArchitoctService
 }
 
-func NewHtmxHandler(tmpl *TemplateRenderer, s *service.ArchitoctService) *htmxHandler {
+func NewHtmxHandler(s *service.ArchitoctService) *htmxHandler {
+    tmpl := NewTemplates()
     return &htmxHandler{
-        templates: tmpl,
+        Templates: tmpl,
         service: s,
     }
 }
 
 func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
     e.Use(middleware.Logger())
-    e.Renderer = app.templates
+    e.Renderer = app.Templates
 
-    // Pages
     e.GET("/", app.handleHome)
-
-    // HTMX endpoints
+    // e.POST("/story", app.postStory)
 }
 
 // Story handlers
@@ -35,10 +34,10 @@ func (app *htmxHandler) handleHome(c echo.Context) error {
     if err != nil {
         return err
     }
-    return c.Render(200, "pages/home", stories)
+    return c.Render(200, "baseLayout", stories)
 }
 
-// func (app *htmxHandler) handleCreateStory(c echo.Context) error {
+// func (app *htmxHandler) postStory(c echo.Context) error {
 //     story, err := app.story.Create(
 //         c.Request().Context(),
 //         c.FormValue("title"),
