@@ -6,7 +6,24 @@
 3. embedding the upvotes and comments into a single document. we will hit that 16mb pretty fast.
 
 if this goes over 1k users we will have to completely refactor the backend here to follow hexagonal architecture
+this is a simple structure to go forwards with
+#+BEGIN_SRC
+architoct/
+├── internal/
+│   ├── store/              # All MongoDB operations
+│   │   ├── post.go         # Basic CRUD
+│   │   ├── comment.go
+│   │   ├── upvote.go
+│   │   └── user.go
+│   │
+│   ├── service/            # Business logic
+│   │   └── forum.go        # Single service with all operations
+│   │
+│   └── handler/            # HTMX handlers
+└── main.go
 
+HTMX -> Handler -> service -> relevant store -> MongoDB
+#+END_SRC
 
 * A TLDR guide to hexagonal architecture and why its Jr. engineers must understand it:
 Goal: we are trying to build something that atleast tries to follow SOLID principles - because they make lives of engineers really easy.
