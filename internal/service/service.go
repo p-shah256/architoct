@@ -47,13 +47,13 @@ func (architcot *ArchitoctService) HomeFeed(ctx context.Context) ([]types.Story,
 }
 
 // PERF: not sure if this is a bad idea to send entire story
-func (architcot *ArchitoctService) Upvote(ctx context.Context, comment bool, id string) (any, error) {
+func (architcot *ArchitoctService) Upvote(ctx context.Context, comment bool, id string, userid string) (any, error) {
 	slog.Info("upvoting...", "comment", comment, "id", id)
 	if comment {
-		updatedStory, err := architcot.commentStore.ToggleUpvote(ctx, id, "asdb")
+		updatedStory, err := architcot.commentStore.ToggleUpvote(ctx, id, userid)
 		return updatedStory, err
 	} else {
-		updatedComment, err := architcot.storyStore.ToggleUpvote(ctx, id, "asdb")
+		updatedComment, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
 		return updatedComment, err
 	}
 

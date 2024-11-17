@@ -67,11 +67,12 @@
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
 <body id="background" class="flex justify-center w-full bg-background-dark">
 
+
 {{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
     <!--like saying just pass in stories from the input into template--------->
-    <div id="inside" class="text-text-secondary flex flex-col py-4 px-4 mt-28 max-w-5xl">
+    <div id="inside" class="text-gray-50 flex flex-col py-4 px-4 mt-28 max-w-5xl">
         {{ template "homeThreadPage" . }}
     </div>
 </body>
@@ -81,12 +82,23 @@
 
 
 {{ block "headerBlock" . }}
-<header class="w-full p-6 bg-gradient-to-b from-red-500/20 to-transparent backdrop-blur-sm fixed top-0">
+<header class="w-full p-2 fixed top-0 h-[15vh] bg-gradient-to-b from-red-800/80 via-red-800/40 via-[30%] to-transparent">
+        <!-- style=" -->
+        <!--   background: linear-gradient(to bottom, -->
+        <!--     rgba(30, 64, 175, 0.6) 0%,   /* blue-800/60 */ -->
+        <!--     rgba(96, 165, 250, 0.4) 30%, /* blue-400/40 */ -->
+        <!--     transparent 100% -->
+        <!--   ); -->
+        <!--   height: 15vh; -->
+        <!-- "> -->
     <div class="flex max-w-5xl mx-auto">
         <div class="flex flex-col">
-            <a href="/" class="group">
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-text-primary to-primary-light bg-clip-text text-transparent tracking-wider transition-all duration-300 group-hover:from-primary-light group-hover:to-text-primary">
-                    <span class="font-normal">ARCHI</span><span>TOCT</span>
+            <a href="/" class="group text-4xl ">
+                <h1 class="text-red-300">
+                    ARCHI
+                </h1>
+                <h1 class="font-bold text-gray-50">
+                    TOCT
                 </h1>
             </a>
         </div>

@@ -1,12 +1,12 @@
 {{ block "singleStoryBlock" . }}
 
-<div id="story-{{.ID}}" class="flex flex-row gap-4 py-3 text-gray-500 text-sm">
+<div id="story-{{.ID}}" class="flex flex-row gap-4 py-3 text-sm">
     <!-- Upvote section -->
     {{ template "upvoteMarker" . }}
 
     <!-- data content -->
     <div id="data" class="flex flex-col">
-        <div class="title text-text-primary hover:underline font-bold text-lg cursor-pointer"
+        <div class="title text-red-400 hover:underline text-lg font-bold cursor-pointer"
              hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
             {{.Title}}
         </div>
@@ -57,20 +57,33 @@
 </div>
 {{ end }}
 
-<!-- NOTE: actually does the parsing by itself to see if upvoted or not -->
+<!-- NOTE: actually does the parsing by itself to see if upvoted or not --
+  -- "contains" had to be registerred as a function in templates.go-->
 {{ block "upvoteMarker" . }}
-<div id="upvote-{{.ID}}" class="flex flex-col items-center py-2">
-        <button class="hover:text-text-primary transition-colors duration-200
-                     {{if contains .UpvotedBy "user-123"}}text-text-primary{{else}}text-text-secondary{{end}}"
-                hx-post="/upvote/story/{{.ID}}"
+<div id="upvote-{{.ID}}" class="flex flex-col items-center">
+        <!-- <\!-- Debug info -\-> -->
+        <!-- <div class="text-xs text-gray-500"> -->
+        <!--     UpvotedBy: {{.UpvotedBy}} -->
+        <!--     Contains user-123: {{contains .UpvotedBy "user-123"}} -->
+        <!-- </div> -->
+        <button class="transition-colors duration-200
+                     {{if contains .UpvotedBy "user-123"}}
+                          text-lime-500
+                     {{else}}
+                         text-gray-400
+                     {{end}}"
+                hx-post="/upvote/story/user-123/{{.ID}}"
                 hx-trigger="click"
                 hx-target="#upvote-{{.ID}}"
                 hx-swap="outerHTML">
-            <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
+                    <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
         </button>
         <!-- Vote count -->
-        <div class="text-lg">
-            {{.UpvoteCount}}
+        <div class="text-lg
+            {{if contains .UpvotedBy "user-123"}}
+                text-lime-600
+            {{end}}">
+                {{.UpvoteCount}}
         </div>
 </div>
 {{ end }}
