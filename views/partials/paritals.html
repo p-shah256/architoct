@@ -1,21 +1,8 @@
 {{ block "singleStoryBlock" . }}
 
-<div id="story-{{.ID}}" class="flex flex-row gap-6 py-3 text-gray-500 text-sm">
+<div id="story-{{.ID}}" class="flex flex-row gap-4 py-3 text-gray-500 text-sm">
     <!-- Upvote section -->
-    <div id="upvoteMarker" class="flex flex-col items-center">
-        <div
-            class="w-0 h-0 border-8 border-transparent border-b-gray-400 hover:border-b-gray-600 cursor-pointer"
-            hx-post="/vote/{{.ID}}"
-            hx-trigger="click"
-            hx-swap="innerHTML"
-            hx-target="next"
-        >
-        </div>
-        <!-- Vote count -->
-        <div class="py-2">
-            {{.UpvoteCount}}
-        </div>
-    </div>
+    {{ template "upvoteMarker" . }}
 
     <!-- data content -->
     <div id="data" class="flex flex-col">
@@ -41,13 +28,14 @@
 {{ block "singleComment" . }}
 
 <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
-    <!-- Comment Content -->
+    <!-- TODO: replace this with the tempalte --
+      -- Comment Content -->
 
     <div class="flex items-center gap-2 text-text-muted">
         <button class="hover:text-text-primary transition-colors duration-200" hx-post="/upvote/{{.ID}}" hx-trigger="click" hx-swap="outerHTML">
             <sl-icon name="caret-up-fill" class="h-4 w-4"></sl-icon>
         </button>
-        <span class="text-sm">{{.VoteCount}}</span>
+        <span class="text-sm">{{.UpvoteCount}}</span>
     </div>
 
 
@@ -66,5 +54,23 @@
         {{ end }}
     </div>
     {{ end }}
+</div>
+{{ end }}
+
+<!-- NOTE: actually does the parsing by itself to see if upvoted or not -->
+{{ block "upvoteMarker" . }}
+<div id="upvote-{{.ID}}" class="flex flex-col items-center py-2">
+        <button class="hover:text-text-primary transition-colors duration-200
+                     {{if contains .UpvotedBy "user-123"}}text-text-primary{{else}}text-text-secondary{{end}}"
+                hx-post="/upvote/story/{{.ID}}"
+                hx-trigger="click"
+                hx-target="#upvote-{{.ID}}"
+                hx-swap="outerHTML">
+            <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
+        </button>
+        <!-- Vote count -->
+        <div class="text-lg">
+            {{.UpvoteCount}}
+        </div>
 </div>
 {{ end }}

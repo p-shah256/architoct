@@ -17,7 +17,16 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 
 func NewTemplates() *TemplateRenderer {
 	// Create a new template instance
-	tmpl := template.New("")
+    tmpl := template.New("").Funcs(template.FuncMap{
+        "contains": func(slice []string, item string) bool {
+            for _, s := range slice {
+                if s == item {
+                    return true
+                }
+            }
+            return false
+        },
+    })
 
 	// Parse all templates in all subdirectories
 	patterns := []string{

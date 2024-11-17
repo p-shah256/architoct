@@ -75,29 +75,35 @@ func (s *StoryStore) AddComment(ctx context.Context, postID string, commentID st
 	return err
 }
 
-func (s *StoryStore) ToggleUpvote(ctx context.Context, postID string, userID string) error {
-    // First try to add upvote
-    result := s.stories.FindOneAndUpdate(
+// TODO: create a helper to use it between story and comment
+func (s *StoryStore) ToggleUpvote(ctx context.Context, postID string, userID string) (types.Story, error) {
+    // For first try, get the updated doc
+    var updatedStory types.Story
+
+    // Try to add upvote
+    err := s.stories.FindOneAndUpdate(
         ctx,
         bson.M{"_id": postID, "upvoted_by": bson.M{"$ne": userID}},
         bson.M{
             "$inc": bson.M{"upvote_count": 1},
             "$addToSet": bson.M{"upvoted_by": userID},
         },
-    )
+        options.FindOneAndUpdate().SetReturnDocument(options.After),
+    ).Decode(&updatedStory)
 
-    if result.Err() == mongo.ErrNoDocuments {
+    if err == mongo.ErrNoDocuments {
         // If user already upvoted, remove the upvote
-        _, err := s.stories.UpdateOne(
+        err = s.stories.FindOneAndUpdate(
             ctx,
             bson.M{"_id": postID},
             bson.M{
                 "$inc": bson.M{"upvote_count": -1},
                 "$pull": bson.M{"upvoted_by": userID},
             },
-        )
-        return err
+            options.FindOneAndUpdate().SetReturnDocument(options.After),
+        ).Decode(&updatedStory)
+        return updatedStory, err
     }
 
-    return result.Err()
+    return updatedStory, err
 }

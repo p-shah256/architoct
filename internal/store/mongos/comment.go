@@ -8,6 +8,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // TYPE AND CREATE /////////////////////////////////////////////////////////////
@@ -48,8 +49,33 @@ func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {
 	return err
 }
 
-func (s *CommentStore) IncrementUpvoteCount(ctx context.Context, commentID string) error {
-	updateAction := bson.M{"$inc": bson.M{"upvote_count": 1}}
-	_, err := s.comments.UpdateOne(ctx, bson.M{"_id": commentID}, updateAction)
-	return err
+func (s *CommentStore) ToggleUpvote(ctx context.Context, commentID string, userID string) (types.Comment, error) {
+    // First try to add upvote
+    var updatedComment types.Comment
+	err := s.comments.FindOneAndUpdate(
+        ctx,
+        bson.M{"_id": commentID, "upvoted_by": bson.M{"$ne": userID}},
+        bson.M{
+            "$inc": bson.M{"upvote_count": 1},
+            "$addToSet": bson.M{"upvoted_by": userID},
+        },
+        options.FindOneAndUpdate().SetReturnDocument(options.After),
+    ).Decode(&updatedComment)
+
+    if err == mongo.ErrNoDocuments {
+        // If user already upvoted, remove the upvote, and return false
+        err = s.comments.FindOneAndUpdate(
+            ctx,
+            bson.M{"_id": commentID},
+            bson.M{
+                "$inc": bson.M{"upvote_count": -1},
+                "$pull": bson.M{"upvoted_by": userID},
+            },
+            options.FindOneAndUpdate().SetReturnDocument(options.After),
+        ).Decode(&updatedComment)
+        return updatedComment, err
+    }
+
+	// else return true
+    return updatedComment, err
 }

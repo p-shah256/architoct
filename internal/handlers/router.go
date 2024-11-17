@@ -26,6 +26,9 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 
     e.GET("/", app.handleHome)
     // e.POST("/story", app.postStory)
+
+    e.POST("/upvote/story/:id", app.handleSVote)
+    // e.POST("/upvote/comment/:id", app.handleCvote)
 }
 
 // Story handlers
@@ -36,6 +39,23 @@ func (app *htmxHandler) handleHome(c echo.Context) error {
     }
     return c.Render(200, "baseLayout", stories)
 }
+
+func (app *htmxHandler) handleSVote(c echo.Context) error {
+    updatedStory, err := app.service.Upvote(c.Request().Context(), false, c.Param("id"))
+    if err != nil {
+        return err
+    }
+    return c.Render(200, "upvoteMarker", updatedStory)
+}
+
+// func (app *htmxHandler) handleCvote(c echo.Context) error {
+//     status, newCount, err := app.service.Upvote(c.Request().Context(), true, c.Param("id"))
+//     if err != nil {
+//         return err
+//     }
+//     return c.Render(200, "baseLayout", stories)
+// }
+
 
 // func (app *htmxHandler) postStory(c echo.Context) error {
 //     story, err := app.story.Create(
