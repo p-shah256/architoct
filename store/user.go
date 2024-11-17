@@ -38,7 +38,7 @@ func (s *UserStore) GetOrCreate(ctx context.Context, fingerprint string) (*types
 
 	// else Create new user
 	user = types.User{
-		Fingerprint: fingerprint,
+		ID: fingerprint,
 		CreatedAt:   time.Now(),
 		LastLogin:   time.Now(),
 	}
