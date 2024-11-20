@@ -11,6 +11,7 @@ import (
 	"architoct/internal/types"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -66,11 +67,15 @@ func (s *StoryStore) GetRecent(ctx context.Context, limit int64) ([]types.Story,
 // IncrementCommentCount updates comment count and adds comment ID
 func (s *StoryStore) AddComment(ctx context.Context, postID string, commentID string) error {
     // add comment id to replies and increment reply count by 1
+    id, err := primitive.ObjectIDFromHex(commentID)
+	if err != nil {
+		return err
+	}
 	update := bson.M{
-		"$push": bson.M{"replies": commentID},
+		"$push": bson.M{"replies": id},
 		"$inc": bson.M{"reply_count": 1},
 	}
-	_, err := s.stories.UpdateOne(ctx, bson.M{"_id": postID}, update)
+	_, err = s.stories.UpdateOne(ctx, bson.M{"_id": postID}, update)
 
 	return err
 }

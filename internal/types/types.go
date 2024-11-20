@@ -2,8 +2,6 @@ package types
 
 import (
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // NOTE: maybe external?
@@ -32,7 +30,7 @@ type Story struct {
 	UpvoteCount int      `bson:"upvote_count,omitempty"`
 	UpvotedBy   []string `bson:"upvoted_by,omitempty"` // user_ids
 	ReplyCount  int      `bson:"reply_count,omitempty"`
-	Replies     []primitive.ObjectID `bson:"replies,omitempty"` // comment_ids
+	Replies     []string `bson:"replies,omitempty"` // comment_ids
 }
 
 // Comment represents a comment on a story
@@ -44,7 +42,7 @@ type Comment struct {
 	CreatedAt time.Time `bson:"created_at"`
 	TimeAgo   string
 
-    ID        primitive.ObjectID `bson:"_id,omitempty"`  // Changed type and fixed tag
+    ID        string `bson:"_id,omitempty"`  // Changed type and fixed tag
 	IsDeleted bool      `bson:"is_deleted,omitempty"`
 
 	// Metadata

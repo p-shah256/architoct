@@ -2,7 +2,7 @@
 
 <div id="story-{{.ID}}" class="flex flex-row gap-4 py-3 text-sm">
     <!-- Upvote section -->
-    {{ template "upvoteMarker" . }}
+    {{ template "storyUpvoteMarker" . }}
 
     <!-- data content -->
     <div id="data" class="flex flex-col">
@@ -31,12 +31,13 @@
     <!-- TODO: replace this with the tempalte --
       -- Comment Content -->
 
-    <div class="flex items-center gap-2 text-text-muted">
-        <button class="hover:text-text-primary transition-colors duration-200" hx-post="/upvote/{{.ID}}" hx-trigger="click" hx-swap="outerHTML">
-            <sl-icon name="caret-up-fill" class="h-4 w-4"></sl-icon>
-        </button>
-        <span class="text-sm">{{.UpvoteCount}}</span>
-    </div>
+    <!-- <div class="flex items-center gap-2 text-text-muted">
+         <button class="hover:text-text-primary transition-colors duration-200" hx-post="/upvote/{{.ID}}" hx-trigger="click" hx-swap="outerHTML">
+         <sl-icon name="caret-up-fill" class="h-4 w-4"></sl-icon>
+         </button>
+         <span class="text-sm">{{.UpvoteCount}}</span>
+         </div> -->
+    {{ template "commentUpvoteMarker" . }}
 
 
     <div id="comment-{{.ID}}-user-{{.ID}}" class="text-text-muted">
@@ -59,7 +60,7 @@
 
 <!-- NOTE: actually does the parsing by itself to see if upvoted or not --
   -- "contains" had to be registerred as a function in templates.go-->
-{{ block "upvoteMarker" . }}
+{{ block "storyUpvoteMarker" . }}
 <div id="upvote-{{.ID}}" class="flex flex-col items-center">
         <!-- <\!-- Debug info -\-> -->
         <!-- <div class="text-xs text-gray-500"> -->
@@ -72,9 +73,38 @@
                      {{else}}
                          text-gray-400
                      {{end}}"
-                hx-post="/upvote/story/user-123/{{.ID}}"
+                hx-post="/upvote/story/{{.ID}}/user/user-123"
                 hx-trigger="click"
                 hx-target="#upvote-{{.ID}}"
+                hx-swap="outerHTML">
+                    <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
+        </button>
+        <!-- Vote count -->
+        <div class="text-lg
+            {{if contains .UpvotedBy "user-123"}}
+                text-lime-600
+            {{end}}">
+                {{.UpvoteCount}}
+        </div>
+</div>
+{{ end }}
+
+{{ block "commentUpvoteMarker" . }}
+<div id="comment-upvote-{{.ID}}" class="flex flex-col items-center">
+        <!-- <\!-- Debug info -\-> -->
+        <!-- <div class="text-xs text-gray-500"> -->
+        <!--     UpvotedBy: {{.UpvotedBy}} -->
+        <!--     Contains user-123: {{contains .UpvotedBy "user-123"}} -->
+        <!-- </div> -->
+        <button class="transition-colors duration-200
+                     {{if contains .UpvotedBy "user-123"}}
+                          text-lime-500
+                     {{else}}
+                         text-gray-400
+                     {{end}}"
+                hx-post="/upvote/comment/{{.ID}}/user/user-123/"
+                hx-trigger="click"
+                hx-target="#comment-upvote-{{.ID}}"
                 hx-swap="outerHTML">
                     <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
         </button>

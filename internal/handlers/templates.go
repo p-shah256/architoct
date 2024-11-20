@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"io"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,6 +28,7 @@ func NewTemplates() *TemplateRenderer {
             return false
         },
     })
+
 
 	// Parse all templates in all subdirectories
 	patterns := []string{

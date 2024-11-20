@@ -23,7 +23,7 @@ type ContentType string
 
 const (
     TypeStory   ContentType = "STORY"
-    Comment ContentType = "COMMENT"
+    TypeComment ContentType = "COMMENT"
 )
 
 type ArchitoctService struct {
@@ -85,18 +85,18 @@ func (architcot *ArchitoctService) StoryPage(ctx context.Context, id string) (ty
 // POST ////////////////////////////////////////////////////////////////////////
 func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType ContentType, id string, userid string) (any, error) {
 	slog.Info("upvoting...", "comment", contentType, "id", id)
-	if contentType == Comment {
-		updatedStory, err := architcot.commentStore.ToggleUpvote(ctx, id, userid)
-		return updatedStory, err
-	} else {
-		updatedComment, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
+	if contentType == TypeComment {
+		updatedComment, err := architcot.commentStore.ToggleUpvote(ctx, id, userid)
 		return updatedComment, err
+	} else {
+		updatedStory, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
+		return updatedStory, err
 	}
 }
 
 
 func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) (error) {
-	if contentType == Comment {
+	if contentType == TypeComment {
 
 	} else {
 		slog.Info("Commenting on a story", )

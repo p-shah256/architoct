@@ -36,9 +36,13 @@ func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) (stri
 	return id, nil
 }
 
-func (s *CommentStore) GetById(ctx context.Context, commentId primitive.ObjectID) (*types.Comment, error) {
+func (s *CommentStore) GetById(ctx context.Context, commentId string) (*types.Comment, error) {
 	var comment types.Comment
-	err := s.comments.FindOne(ctx, bson.M{"_id": commentId}).Decode(&comment)
+	id, err := primitive.ObjectIDFromHex(commentId)
+	if err != nil {
+		return nil, err
+	}
+	err = s.comments.FindOne(ctx, bson.M{"_id": id}).Decode(&comment)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, err
@@ -58,11 +62,12 @@ func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {
 }
 
 func (s *CommentStore) ToggleUpvote(ctx context.Context, commentID string, userID string) (types.Comment, error) {
+	id, _ := primitive.ObjectIDFromHex(commentID)
     // First try to add upvote
     var updatedComment types.Comment
 	err := s.comments.FindOneAndUpdate(
         ctx,
-        bson.M{"_id": commentID, "upvoted_by": bson.M{"$ne": userID}},
+        bson.M{"_id": id, "upvoted_by": bson.M{"$ne": userID}},
         bson.M{
             "$inc": bson.M{"upvote_count": 1},
             "$addToSet": bson.M{"upvoted_by": userID},
@@ -74,7 +79,7 @@ func (s *CommentStore) ToggleUpvote(ctx context.Context, commentID string, userI
         // If user already upvoted, remove the upvote, and return false
         err = s.comments.FindOneAndUpdate(
             ctx,
-            bson.M{"_id": commentID},
+            bson.M{"_id": id},
             bson.M{
                 "$inc": bson.M{"upvote_count": -1},
                 "$pull": bson.M{"upvoted_by": userID},

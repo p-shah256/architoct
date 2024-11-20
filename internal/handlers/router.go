@@ -5,7 +5,6 @@ package handlers
 // if we need pure api we need other handler
 
 import (
-	"fmt"
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
@@ -35,9 +34,9 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
     e.GET("/story/:id", app.handleStory)
     // e.POST("/story", app.postStory)
 
-    e.POST("/upvote/story/:userid/:id", app.handleSVote)
+    e.POST("/upvote/story/:storyid/user/:userid", app.handleSVote)
     e.POST("/comment/story/:storyid/user/:userid", app.handleComment)
-    // e.POST("/upvote/comment/:id", app.handleCvote)
+    e.POST("/upvote/comment/:commentid/user/:userid", app.handleCVote)
 }
 
 // GET HANDLERS ///////////////////////////////////////////////////////////////
@@ -54,24 +53,31 @@ func (app *htmxHandler) handleStory(c echo.Context) error {
     if err != nil {
         return err
     }
-    slog.Info("story comments", "number", story)
+    slog.Info("story comments", "number", len(story.Comments))
     return c.Render(200, "storyPage", story)
 }
 
 // POST HANDLERS //////////////////////////////////////////////////////////////
 func (app *htmxHandler) handleSVote(c echo.Context) error {
-    updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("id"), c.Param("userid"))
+    updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("storyid"), c.Param("userid"))
     if err != nil {
         return err
     }
-    return c.Render(200, "upvoteMarker", updatedStory)
+    return c.Render(200, "storyUpvoteMarker", updatedStory)
+}
+
+func (app *htmxHandler) handleCVote(c echo.Context) error {
+    updatedComment, err := app.service.Upvote(c.Request().Context(), service.TypeComment, c.Param("commentid"), c.Param("userid"))
+    if err != nil {
+        return err
+    }
+    return c.Render(200, "commentUpvoteMarker", updatedComment)
 }
 
 func (app *htmxHandler) handleComment(c echo.Context) error {
     body := c.FormValue("body")
     storyID := c.Param("storyid")
     userID := c.Param("userid")
-    fmt.Printf("Received at router: body=%s, storyID=%s, userID=%s\n", body, storyID, userID)
 
     err := app.service.Comment(c.Request().Context(), storyID, userID, body, service.TypeStory)
     if err != nil {
