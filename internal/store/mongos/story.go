@@ -7,7 +7,6 @@ package mongos
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"architoct/internal/types"
 

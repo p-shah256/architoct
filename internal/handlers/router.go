@@ -5,6 +5,7 @@ package handlers
 // if we need pure api we need other handler
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
@@ -35,10 +36,11 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
     // e.POST("/story", app.postStory)
 
     e.POST("/upvote/story/:userid/:id", app.handleSVote)
+    e.POST("/comment/story/:storyid/user/:userid", app.handleComment)
     // e.POST("/upvote/comment/:id", app.handleCvote)
 }
 
-// Story handlers
+// GET HANDLERS ///////////////////////////////////////////////////////////////
 func (app *htmxHandler) handleHome(c echo.Context) error {
     stories, err := app.service.HomeFeed(c.Request().Context())
     if err != nil {
@@ -52,14 +54,28 @@ func (app *htmxHandler) handleStory(c echo.Context) error {
     if err != nil {
         return err
     }
-    slog.Info("returning story", "story", story)
+    slog.Info("story comments", "number", story)
     return c.Render(200, "storyPage", story)
 }
 
+// POST HANDLERS //////////////////////////////////////////////////////////////
 func (app *htmxHandler) handleSVote(c echo.Context) error {
-    updatedStory, err := app.service.Upvote(c.Request().Context(), false, c.Param("id"), c.Param("userid"))
+    updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("id"), c.Param("userid"))
     if err != nil {
         return err
     }
     return c.Render(200, "upvoteMarker", updatedStory)
+}
+
+func (app *htmxHandler) handleComment(c echo.Context) error {
+    body := c.FormValue("body")
+    storyID := c.Param("storyid")
+    userID := c.Param("userid")
+    fmt.Printf("Received at router: body=%s, storyID=%s, userID=%s\n", body, storyID, userID)
+
+    err := app.service.Comment(c.Request().Context(), storyID, userID, body, service.TypeStory)
+    if err != nil {
+        return err
+    }
+    return nil
 }

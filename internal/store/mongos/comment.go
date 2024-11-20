@@ -5,8 +5,10 @@ package mongos
 import (
 	"architoct/internal/types"
 	"context"
+	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,12 +25,18 @@ func NewCommentStore(db *mongo.Database) *CommentStore {
 }
 
 // OPERATIONS /////////////////////////////////////////////////////////////////
-func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) error {
-	_, err := s.comments.InsertOne(ctx, comment)
-	return err
+func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) (string, error) {
+	result, err := s.comments.InsertOne(ctx, comment)
+	if err != nil {
+		return "", err
+	}
+	slog.Info("returning ID", "id", result.InsertedID.(primitive.ObjectID).Hex())
+	id := result.InsertedID.(primitive.ObjectID).Hex()
+	slog.Info("returning ID", "id", id)
+	return id, nil
 }
 
-func (s *CommentStore) GetById(ctx context.Context, commentId string) (*types.Comment, error) {
+func (s *CommentStore) GetById(ctx context.Context, commentId primitive.ObjectID) (*types.Comment, error) {
 	var comment types.Comment
 	err := s.comments.FindOne(ctx, bson.M{"_id": commentId}).Decode(&comment)
 	if err != nil {
