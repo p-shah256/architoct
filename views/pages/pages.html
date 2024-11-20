@@ -4,10 +4,10 @@
     {{end}}
 {{ end }}
 
-{{ block "storyThreadPage" . }}
-    {{template "singleStoryBlock" .}}
+{{ block "storyPage" . }}
+    {{template "singleStoryBlock" .Story}}
     <div id="body">
-        {{ .Body }}
+        {{ .Story.Body }}
     </div>
 
     <!-- Comments Section -->

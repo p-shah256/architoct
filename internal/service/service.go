@@ -6,16 +6,15 @@ package service
 // also it does not care if its mongo or something else.. so it has to be passed into it
 //
 // this is the real buisness logic
+//
+// also this cannot return any ptrs cause HTMX needs actual data
 
 import (
 	"architoct/internal/store/mongos"
 	"architoct/internal/types"
 	"context"
-	"fmt"
 	"log/slog"
-
 	// "log/slog"
-	"time"
 )
 
 type ArchitoctService struct {
@@ -32,16 +31,15 @@ func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos
 	}
 }
 
+// TODO: check types and remove redundant returns and use ptrs
 func (architcot *ArchitoctService) HomeFeed(ctx context.Context) ([]types.Story, error) {
-	// 1. get all the top 20 stories for now
 	stories, err := architcot.storyStore.GetRecent(ctx, 20)
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. Transform the timestamps
 	for i := range stories {
-		stories[i].TimeAgo = formatTimeAgo(stories[i].CreatedAt)
+		formatStory(&stories[i])
 	}
 	return stories, nil
 }
@@ -56,28 +54,32 @@ func (architcot *ArchitoctService) Upvote(ctx context.Context, comment bool, id 
 		updatedComment, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
 		return updatedComment, err
 	}
-
 }
 
-// Helper function in the service package
-func formatTimeAgo(t time.Time) string {
-	now := time.Now()
-	diff := now.Sub(t)
-
-	switch {
-	case diff < time.Minute:
-		return "just now"
-	case diff < time.Hour:
-		mins := int(diff.Minutes())
-		return fmt.Sprintf("%dm ago", mins)
-	case diff < 24*time.Hour:
-		hours := int(diff.Hours())
-		return fmt.Sprintf("%dh ago", hours)
-	case diff < 7*24*time.Hour:
-		days := int(diff.Hours() / 24)
-		return fmt.Sprintf("%dd ago", days)
-	default:
-		weeks := int(diff.Hours() / 24 / 7)
-		return fmt.Sprintf("%dw ago", weeks)
+func (architcot *ArchitoctService) StoryPage(ctx context.Context, id string) (types.StoryPage, error) {
+	requestedStory, err := architcot.storyStore.GetByID(ctx, id)
+	if err != nil {
+		return types.StoryPage{}, err
 	}
+    slog.Info("asking for story ID", "id", id)
+
+	comments := make([]types.Comment, 0, len(requestedStory.Replies))
+	// not using reply count here cause it might be incosistent failing whole fetch
+	for i := range len(requestedStory.Replies) {
+		slog.Info("asking for comment ID", "id", requestedStory.Replies[i])
+		comment, err := architcot.commentStore.GetById(ctx, requestedStory.Replies[i])
+		if err != nil {
+			return types.StoryPage{}, err
+		}
+		comments = append(comments, *comment)
+	}
+
+	// uses pointer so no return needed
+	formatStory(requestedStory)
+	storyPage := types.StoryPage {
+		Story: *requestedStory,
+		Comments: comments,
+	}
+
+	return storyPage, nil
 }

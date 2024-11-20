@@ -1,6 +1,12 @@
 package handlers
 
+// NOTE: DESIGN: entry point into our service
+// these are very specifically HTMX handlers
+// if we need pure api we need other handler
+
 import (
+	"log/slog"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -25,6 +31,7 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
     e.Renderer = app.Templates
 
     e.GET("/", app.handleHome)
+    e.GET("/story/:id", app.handleStory)
     // e.POST("/story", app.postStory)
 
     e.POST("/upvote/story/:userid/:id", app.handleSVote)
@@ -38,6 +45,15 @@ func (app *htmxHandler) handleHome(c echo.Context) error {
         return err
     }
     return c.Render(200, "baseLayout", stories)
+}
+
+func (app *htmxHandler) handleStory(c echo.Context) error {
+    story, err := app.service.StoryPage(c.Request().Context(), c.Param("id"))
+    if err != nil {
+        return err
+    }
+    slog.Info("returning story", "story", story)
+    return c.Render(200, "storyPage", story)
 }
 
 func (app *htmxHandler) handleSVote(c echo.Context) error {

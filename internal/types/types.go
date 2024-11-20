@@ -49,3 +49,10 @@ type Comment struct {
 	ReplyCount  int      `bson:"reply_count,omitempty"`
 	Replies     []string `bson:"replies,omitempty"` // comment_ids
 }
+
+
+//SERVICE TYPES/////////////////////////////////////////////////////////////
+type StoryPage struct {
+	Story Story
+	Comments []Comment
+}

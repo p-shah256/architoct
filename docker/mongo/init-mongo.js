@@ -62,7 +62,7 @@ db.createCollection('comments', {
       required: ['user_id', 'body', 'created_at', 'post_id'], //_id will be auto
       properties: {
         // COMMENT DATA -----------------------------------
-        _id: {bsonType: 'string'},
+        // _id: {bsonType: 'string'}, // lets use auto
         post_id: { bsonType: 'string' }, //nanoID maybe with 4 chars
         user_id: { bsonType: 'string' },
         body: { bsonType: 'string' },

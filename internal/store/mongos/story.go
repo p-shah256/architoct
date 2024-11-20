@@ -7,6 +7,7 @@ package mongos
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"architoct/internal/types"
 
@@ -35,9 +36,9 @@ func (s *StoryStore) Create(ctx context.Context, story *types.Story) error {
 }
 
 func (s *StoryStore) GetByID(ctx context.Context, id string) (*types.Story, error) {
-	var post types.Story
-	err := s.stories.FindOne(ctx, bson.M{"_id": id}).Decode(&post)
-	return &post, err
+	var story types.Story
+	err := s.stories.FindOne(ctx, bson.M{"_id": id}).Decode(&story)
+	return &story, err
 }
 
 // GetRecent supports our homepage feed
