@@ -87,7 +87,13 @@
     <!--like saying just pass in stories from the input into template--------->
 
     <div id="inside" class="text-gray-50 flex flex-col py-4 px-4 mt-28 max-w-5xl">
-        {{ block "homeContent" . }}{{ end }} <!-- this is the spot that gets filled -->
+    {{- if eq .PageType "home" }}
+        {{ block "homeContent" .Data }}{{ end }}
+    {{ else if eq .PageType "story" }}
+        {{ block "storyContent" .Data }}{{ end }}
+    {{ else if eq .PageType "profile" }}
+        {{ block "profileContent" .Data }}{{ end }}
+    {{ end -}}
     </div>
 </body>
 

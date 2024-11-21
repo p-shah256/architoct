@@ -18,12 +18,12 @@ import (
 	// "log/slog"
 )
 
-//ENUM TO KEEP things simple///////////////////////////////////////////////////
+// ENUM TO KEEP things simple///////////////////////////////////////////////////
 type ContentType string
 
 const (
-    TypeStory   ContentType = "STORY"
-    TypeComment ContentType = "COMMENT"
+	TypeStory   ContentType = "STORY"
+	TypeComment ContentType = "COMMENT"
 )
 
 type ArchitoctService struct {
@@ -41,8 +41,8 @@ func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos
 }
 
 // GET //////////////////////////////////////////////////////////////////////
-// TODO: check types and remove redundant returns and use ptrs
-func (architcot *ArchitoctService) HomeFeed(ctx context.Context) ([]types.Story, error) {
+// TODO: add ability for infinite scrolling
+func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context) ([]types.Story, error) {
 	stories, err := architcot.storyStore.GetRecent(ctx, 20)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (architcot *ArchitoctService) HomeFeed(ctx context.Context) ([]types.Story,
 	return stories, nil
 }
 
-func (architcot *ArchitoctService) StoryPage(ctx context.Context, id string) (types.StoryPage, error) {
+func (architcot *ArchitoctService) GetStoryPage(ctx context.Context, id string) (types.StoryPage, error) {
 	requestedStory, err := architcot.storyStore.GetByID(ctx, id)
 	if err != nil {
 		return types.StoryPage{}, err
@@ -73,14 +73,13 @@ func (architcot *ArchitoctService) StoryPage(ctx context.Context, id string) (ty
 
 	// uses pointer so no return needed
 	formatStory(requestedStory)
-	storyPage := types.StoryPage {
-		Story: *requestedStory,
+	storyPage := types.StoryPage{
+		Story:    *requestedStory,
 		Comments: comments,
 	}
 
 	return storyPage, nil
 }
-
 
 // POST ////////////////////////////////////////////////////////////////////////
 func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType ContentType, id string, userid string) (any, error) {
@@ -94,25 +93,47 @@ func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType Conte
 	}
 }
 
-
-func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) (error) {
+// TODO: can we optimise this ? options:
+// 1. maybe send a postid with the request.. but that makes the api incosistent
+// 2. let db layer handle adding postid to the comment... honestly the postid is not even required here
+// how expensive is this extra visit to DB? in term of latency claude says ~0.1-1ms for local
+func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) error {
 	if contentType == TypeComment {
-
-	} else {
-		slog.Info("Commenting on a story", )
+		slog.Info("Commenting on a comment")
+		parentComment, err := architcot.commentStore.GetById(ctx, parentid)
+		if err != nil {
+			return err
+		}
 		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
-			PostID: parentid,
-			Body: body,
-			UserID: userid,
+			PostID:    parentComment.PostID,
+			Body:      body,
+			UserID:    userid,
 			CreatedAt: time.Now(),
 		})
 		if err != nil {
 			return err
 		}
-		err = architcot.storyStore.AddComment(ctx, parentid, commentID)
+		return architcot.commentStore.AddReply(ctx, parentid, commentID)
+	} else {
+		slog.Info("Commenting on a story")
+		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
+			PostID:    parentid,
+			Body:      body,
+			UserID:    userid,
+			CreatedAt: time.Now(),
+		})
 		if err != nil {
 			return err
 		}
+		return architcot.storyStore.AddComment(ctx, parentid, commentID)
 	}
-	return nil
+}
+
+func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, body string, title string) error {
+	return architcot.storyStore.Create(ctx, &types.Story{
+		CreatedAt: time.Now(),
+		Body: body,
+		UserID: userid,
+		Title: title,
+	})
 }

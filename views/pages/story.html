@@ -1,8 +1,3 @@
-<!-- new story page that renders the whole thing with all css and base -->
-{{ block "storyPage" . }}
-    {{ template "baseLayout" . }}
-{{ end }}
-
 <!-- this block will be using targeted rendering ... WITHOUT BASE -->
 {{ define "storyContent" }}  <!-- Use define instead of block here -->
     {{template "singleStoryBlock" .Story}}

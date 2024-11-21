@@ -52,6 +52,24 @@ func (s *CommentStore) GetById(ctx context.Context, commentId string) (*types.Co
 	return &comment, nil
 }
 
+func (s *CommentStore) AddReply(ctx context.Context, parentCommentId string, commentId string) (error) {
+	// TODO: add celebration effect here and for story
+	commentid, err := primitive.ObjectIDFromHex(commentId)
+	parentid, err := primitive.ObjectIDFromHex(parentCommentId)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.comments.UpdateOne(ctx, bson.M{"_id": parentid}, bson.M{"$push": bson.M{"replies": commentid}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return err
+		}
+		return err
+	}
+	return nil
+}
+
 func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {
 	// REVIEW: what is bson.M?
 	// bson.M is just a data structure = map[string]interface{}
