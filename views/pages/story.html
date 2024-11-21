@@ -1,10 +1,10 @@
-{{ block "homeThreadPage" . }}
-    {{range .}}
-            {{template "singleStoryBlock" .}}
-    {{end}}
+<!-- new story page that renders the whole thing with all css and base -->
+{{ block "storyPage" . }}
+    {{ template "baseLayout" . }}
 {{ end }}
 
-{{ block "storyPage" . }}
+<!-- this block will be using targeted rendering ... WITHOUT BASE -->
+{{ define "storyContent" }}  <!-- Use define instead of block here -->
     {{template "singleStoryBlock" .Story}}
     <div id="body">
         {{ .Story.Body }}
