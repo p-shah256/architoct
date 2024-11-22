@@ -11,7 +11,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
 
     <!-- Self-hosted styles and scripts -->
-    <link href="views/assets/tailwind.min.css" rel="stylesheet">
+    <!-- <link href="views/assets/tailwind.min.css" rel="stylesheet"> -->
+  <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="views/assets/htmx.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
@@ -24,7 +25,7 @@
 
 
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
-<body id="background" class="flex justify-center w-full bg-background-white">
+<body id="background" class="flex justify-center w-full bg-background-gray">
 {{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
@@ -39,8 +40,8 @@
         {{ block "profileContent" .Data }}{{ end }}
     {{ end -}}
     </div>
-</body>
 
+</body>
 </html>
 {{ end }}
 
