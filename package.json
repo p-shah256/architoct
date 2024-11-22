@@ -1,0 +1,11 @@
+{
+  "name": "architoct",
+  "version": "1.0.0",
+  "scripts": {
+    "build:css": "tailwindcss -i ./views/assets/input.css -o ./views/assets/output.css --minify",
+    "watch:css": "tailwindcss -i ./views/assets/input.css -o ./views/assets/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
