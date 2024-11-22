@@ -44,10 +44,11 @@ func (s *StoryStore) GetByID(ctx context.Context, id string) (*types.Story, erro
 // GetRecent supports our homepage feed
 // limit: how many posts to fetch
 // timeRange: "hour", "day", "week" etc
-func (s *StoryStore) GetRecent(ctx context.Context, limit int64) ([]types.Story, error) {
+func (s *StoryStore) GetRecent(ctx context.Context, limit int64, page int64) ([]types.Story, error) {
     // First, let's count total documents
     opts := options.Find().
         SetSort(bson.D{{Key: "upvote_count", Value: -1}}).
+		SetSkip((page-1) * limit).
         SetLimit(limit)
 
     // Let's also print what a sample document looks like

@@ -7,6 +7,8 @@ package handlers
 import (
 	// "log/slog"
 
+	"strconv"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -53,9 +55,14 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 	e.POST("/comment/comment/:commentid/user/:userid", app.handlePostCcomment)
 }
 
+// TODO: verify if infinite scroll works fine
 // GET HANDLERS ///////////////////////////////////////////////////////////////
 func (app *htmxHandler) handleGetHome(c echo.Context) error {
-	stories, err := app.service.GetHomeFeed(c.Request().Context())
+	page, _ := strconv.ParseInt(c.QueryParam("page"), 10, 64)
+	if page == 0 {
+		page = 1
+	}
+	stories, err := app.service.GetHomeFeed(c.Request().Context(), page)
 	if err != nil {
 		return err
 	}
@@ -86,7 +93,7 @@ func (app *htmxHandler) handlePostSVote(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Render(200, "storyUpvoteMarker", updatedStory)
+	return c.Render(200, "singleStoryBlock", updatedStory)
 }
 
 func (app *htmxHandler) handlePostCVote(c echo.Context) error {

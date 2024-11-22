@@ -1,12 +1,15 @@
 {{ block "singleStoryBlock" . }}
 
-<div id="story-{{.ID}}" class="flex flex-row gap-4 py-3 text-sm">
-    <!-- Upvote section -->
+<div id="story-{{.ID}}" class="flex flex-row gap-4 p-3 text-sm border border-gray-800 rounded-2xl
+                                {{if contains .UpvotedBy "user-123"}}
+                                    bg-lime-200
+                                {{else}}
+                                    bg-background-gray
+                                {{end}}">
     {{ template "storyUpvoteMarker" . }}
 
-    <!-- data content -->
     <div id="data" class="flex flex-col">
-        <div class="title text-red-400 hover:underline text-lg font-bold cursor-pointer"
+        <div class="title hover:underline font-bold cursor-pointer"
              hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
             {{.Title}}
         </div>
@@ -29,15 +32,7 @@
     <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
     <!-- TODO: replace this with the tempalte --
       -- Comment Content -->
-
-    <!-- <div class="flex items-center gap-2 text-text-muted">
-         <button class="hover:text-text-primary transition-colors duration-200" hx-post="/upvote/{{.ID}}" hx-trigger="click" hx-swap="outerHTML">
-         <sl-icon name="caret-up-fill" class="h-4 w-4"></sl-icon>
-         </button>
-         <span class="text-sm">{{.UpvoteCount}}</span>
-         </div> -->
     {{ template "commentUpvoteMarker" . }}
-
 
     <div id="comment-{{.ID}}-user-{{.ID}}" class="text-text-muted">
         {{.UserID}} | {{.TimeAgo}}
@@ -60,29 +55,31 @@
 <!-- NOTE: actually does the parsing by itself to see if upvoted or not --
   -- "contains" had to be registerred as a function in templates.go-->
 {{ block "storyUpvoteMarker" . }}
-<div id="upvote-{{.ID}}" class="flex flex-col items-center">
+<div id="upvote-{{.ID}}" class="flex flex-col items-center text-gray-850">
         <!-- <\!-- Debug info -\-> -->
         <!-- <div class="text-xs text-gray-500"> -->
         <!--     UpvotedBy: {{.UpvotedBy}} -->
         <!--     Contains user-123: {{contains .UpvotedBy "user-123"}} -->
         <!-- </div> -->
-        <button class="transition-colors duration-200
-                     {{if contains .UpvotedBy "user-123"}}
-                          text-lime-500
-                     {{else}}
-                         text-gray-400
-                     {{end}}"
+        <button class="transition-colors duration-200"
+                onclick="if(!this.querySelector('path').getAttribute('fill').includes('gray-850')) confetti()"
                 hx-post="/upvote/story/{{.ID}}/user/user-123"
                 hx-trigger="click"
-                hx-target="#upvote-{{.ID}}"
+                hx-target="#story-{{.ID}}"
                 hx-swap="outerHTML">
-                    <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
+            <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 3l8 8h-5v10h-6v-10h-5z"
+                    fill="{{if contains .UpvotedBy "user-123"}}
+                            text-gray-850
+                          {{else}}
+                            none
+                          {{end}}"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    stroke-linejoin="round"/>
+            </svg>
         </button>
-        <!-- Vote count -->
-        <div class="text-lg
-            {{if contains .UpvotedBy "user-123"}}
-                text-lime-600
-            {{end}}">
+        <div >
                 {{.UpvoteCount}}
         </div>
 </div>
@@ -116,3 +113,11 @@
         </div>
 </div>
 {{ end }}
+
+<!-- NOTE: heres how to use ifs -->
+<!--
+     {{if contains .UpvotedBy "user-123"}}
+     text-gray-850
+     {{else}}
+     text-gray-400
+     {{end}} -->

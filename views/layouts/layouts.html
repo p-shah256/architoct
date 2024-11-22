@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/themes/dark.css" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/shoelace-autoloader.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <!-- TODO: I HATE THIS Shoelace custom properties to match your dark theme -->
     <style>
@@ -78,15 +78,27 @@
 
 
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
-<body id="background" class="flex justify-center w-full bg-background-dark">
-
+<body id="background" class="flex justify-center w-full bg-background-white">
+    <!-- button onclick="  confetti({
+          particleCount: 100,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+          });
+          // and launch a few from the right edge
+          confetti({
+          particleCount: 100,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+          })">🎉</button> -->
 
 {{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
     <!--like saying just pass in stories from the input into template--------->
 
-    <div id="inside" class="text-gray-50 flex flex-col py-4 px-4 mt-28 max-w-5xl">
+    <div id="inside" class="text-gray-800 flex flex-col py-4 px-4 mt-28 max-w-5xl gap-4">
     {{- if eq .PageType "home" }}
         {{ block "homeContent" .Data }}{{ end }}
     {{ else if eq .PageType "story" }}
@@ -112,26 +124,23 @@
 
 
 {{ block "headerBlock" . }}
-<header class="w-full p-2 fixed top-0 h-[15vh] bg-gradient-to-b from-red-800/80 via-red-800/40 via-[30%] to-transparent">
-        <!-- style=" -->
-        <!--   background: linear-gradient(to bottom, -->
-        <!--     rgba(30, 64, 175, 0.6) 0%,   /* blue-800/60 */ -->
-        <!--     rgba(96, 165, 250, 0.4) 30%, /* blue-400/40 */ -->
-        <!--     transparent 100% -->
-        <!--   ); -->
-        <!--   height: 15vh; -->
-        <!-- "> -->
-    <div class="flex max-w-5xl mx-auto">
-        <div class="flex flex-col">
-            <a href="/" class="group text-4xl ">
-                <h1 class="text-red-300">
-                    ARCHI
-                </h1>
-                <h1 class="font-bold text-gray-50">
-                    TOCT
-                </h1>
-            </a>
-        </div>
+<header class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-violet-800/40 via-violet-800/20 via-[60%] to-transparent">
+    <div id="header-inside" class="flex flex-col h-full items-center justify-center max-w-5xl mx-auto align-middle">
+        <a href="/" class="group text-4xl">
+            <h1 class="font-bold">
+                THE ARCHITOCT
+            </h1>
+        </a>
+        <div id="buttons">
+            <button>
+                About
+            </button>
+            <button>
+                Top
+            </button>
+            <button>
+                20
+            </button>
     </div>
 </header>
 {{ end }}

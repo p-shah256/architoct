@@ -42,8 +42,8 @@ func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos
 
 // GET //////////////////////////////////////////////////////////////////////
 // TODO: add ability for infinite scrolling
-func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context) ([]types.Story, error) {
-	stories, err := architcot.storyStore.GetRecent(ctx, 20)
+func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64) ([]types.Story, error) {
+	stories, err := architcot.storyStore.GetRecent(ctx, 20, page)
 	if err != nil {
 		return nil, err
 	}
