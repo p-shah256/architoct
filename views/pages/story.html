@@ -7,27 +7,6 @@
 
     <!-- Comments Section -->
     <div id="comments-section" class="flex flex-col gap-4 mt-6">
-        <!-- add comment form -->
-        <form id="comment-form"
-            class="flex flex-col gap-3 p-4 rounded-lg bg-background-card">
-            <sl-textarea
-                name="body"
-                placeholder="What would you add?"
-                resize="auto"
-                required></sl-textarea>
-
-            <div class="flex justify-end">
-                <sl-button class="text-text-primary" variant="text" size="small"
-                    hx-post="/comment/story/{{.Story.ID}}/user/user-123"
-                    hx-include="[name='body']"
-                    hx-trigger="click"
-                    hx-swap="none"
-                    hx-on::after-request="if(event.detail.successful) { this.closest('form').querySelector('sl-textarea').value = ''; }">
-                    Post it!
-                </sl-button>
-            </div>
-        </form>
-
         <div class="font-bold text-text-primary">
             Discussions
         </div>

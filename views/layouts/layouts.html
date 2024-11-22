@@ -8,91 +8,23 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Architoct</title>
 
-    <!-- Essential Scripts & Styles -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/themes/dark.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/shoelace-autoloader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
 
-    <!-- TODO: I HATE THIS Shoelace custom properties to match your dark theme -->
+    <!-- Self-hosted styles and scripts -->
+    <link href="views/assets/tailwind.min.css" rel="stylesheet">
+    <script defer src="views/assets/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
     <style>
-      :root {
-        /* Input borders and backgrounds */
-        --sl-panel-background-color: #1a1a1b;
-        --sl-input-background-color: #1a1a1b;
-        --sl-input-border-color: #272729;
-
-        /* Focus states */
-        --sl-color-primary-600: #f87171;
-        --sl-input-focus-ring-color: #ff4500;
-
-        /* Text colors */
-        --sl-color-neutral-0: #ffffff;
-        --sl-input-color: #ffffff;
-        --sl-color-neutral-900: #000000;
-      }
+    .bg-custom-lime {
+        background-color: #e4f8b4;
+    }
     </style>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            base: '#ff4500',
-                            hover: '#ff5722',
-                            light: '#ff6b45',
-                            dark: '#cc3700',
-                        },
-                        background: {
-                            dark: '#000000',
-                            card: '#1a1a1b',
-                            hover: '#272729',
-                        },
-                        text: {
-                            primary: '#f87171',
-                            secondary: '#ffffff',
-                            muted: '#6E7578',
-                            link: '#4FBCFF',
-                        }
-                    },
-                }
-            }
-        }
-    </script>
-
-<style>
-    .htmx-indicator {
-        opacity: 0;
-        transition: opacity 200ms ease-in;
-    }
-    .htmx-request .htmx-indicator {
-        opacity: 1
-    }
-    .htmx-request.htmx-indicator {
-        opacity: 1
-    }
-</style>
 </head>
 
 
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
 <body id="background" class="flex justify-center w-full bg-background-white">
-    <!-- button onclick="  confetti({
-          particleCount: 100,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 }
-          });
-          // and launch a few from the right edge
-          confetti({
-          particleCount: 100,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 }
-          })">🎉</button> -->
-
 {{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
