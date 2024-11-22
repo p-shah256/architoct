@@ -1,13 +1,13 @@
 <!-- this block will be using targeted rendering ... WITHOUT BASE -->
 {{ define "storyContent" }}  <!-- Use define instead of block here -->
     {{template "singleStoryBlock" .Story}}
-    <div id="body">
+    <div id="body" class="p-3" >
         {{ .Story.Body }}
     </div>
 
     <!-- Comments Section -->
     <div id="comments-section" class="flex flex-col gap-4 mt-6">
-        <div class="font-bold text-text-primary">
+        <div class="font-bold text-text-primary bg-custom-lime p-3 w-fit rounded-xl">
             Discussions
         </div>
 

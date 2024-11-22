@@ -43,7 +43,8 @@ func main() {
 	handler := handlers.NewHtmxHandler(service)
 	e := echo.New()
 	e.Renderer = handler.Templates
-	e.Static("/views", "views")
+	// e.Static("/views", "views")
+	e.Static("/assets", "views/assets")
 	handler.SetupRoutes(e)
 
 	// Start server

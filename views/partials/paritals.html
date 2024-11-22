@@ -30,26 +30,51 @@
 
 {{ block "singleComment" . }}
     <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
-    <!-- TODO: replace this with the tempalte --
-      -- Comment Content -->
-    {{ template "commentUpvoteMarker" . }}
 
-    <div id="comment-{{.ID}}-user-{{.ID}}" class="text-text-muted">
-        {{.UserID}} | {{.TimeAgo}}
-    </div>
-    <div id="content-{{.ID}}" class="">
-        {{.Body}}
-    </div>
+        <div id="comment-metadata-{{.ID}}" class="text-gray-400">
+        {{.UserID}} {{.TimeAgo}}
+        </div>
+        <div id="content-body-{{.ID}}" class="">
+            {{.Body}}
+        </div>
 
-    <!-- Replies Section -->
-    {{ if .Replies }}
-    <div id="replies-{{.ID}}" class="pl-4">
-        {{ range .Replies }}
-        {{ template "singleComment" . }}
+        <div id="comment-metadata-{{.ID}}" class="flex justify-between items-center text-gray-400">
+            <div id="left" class="flex gap-4">
+                {{ template "commentUpvoteMarker" . }}
+                <button onclick="showReply('{{.ID}}')" class="text-gray-800 hover:text-gray-700 rounded-xl p-1 text-xs">
+                    🗨️ Reply
+                </button>
+            </div>
+        </div>
+
+        <div id="reply-{{.ID}}" style="display: none" class="relative">
+            <div class="relative">
+                <textarea
+                    name="reply-body"
+                    placeholder="What would you add?"
+                    class="w-full resize-none border-none focus:ring-0 sm:text-sm pr-20 p-2"
+                    rows="4"
+                ></textarea>
+                <button type="submit" class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl p-2 hover:bg-violet-300 transition-colors"
+                    hx-trigger="click" hx-post="/comment/comment/{{.ID}}/user/user123" hx-include="closest div textarea[name='reply-body']"
+                >Post</button>
+            </div>
+        </div>
+
+        {{ if .Replies }}
+        <div id="replies-{{.ID}}" class="pl-4">
+            {{ range .Replies }}
+                {{ template "singleComment" . }}
+            {{ end }}
+        </div>
         {{ end }}
     </div>
-    {{ end }}
-</div>
+<script>
+function showReply(id) {
+    const form = document.getElementById('reply-' + id);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+</script>
 {{ end }}
 
 <!-- NOTE: actually does the parsing by itself to see if upvoted or not --
@@ -85,32 +110,26 @@
 {{ end }}
 
 {{ block "commentUpvoteMarker" . }}
-<div id="comment-upvote-{{.ID}}" class="flex flex-col items-center">
-        <!-- <\!-- Debug info -\-> -->
-        <!-- <div class="text-xs text-gray-500"> -->
-        <!--     UpvotedBy: {{.UpvotedBy}} -->
-        <!--     Contains user-123: {{contains .UpvotedBy "user-123"}} -->
-        <!-- </div> -->
-        <button class="transition-colors duration-200
-                     {{if contains .UpvotedBy "user-123"}}
-                          text-lime-500
-                     {{else}}
-                         text-gray-400
-                     {{end}}"
-                hx-post="/upvote/comment/{{.ID}}/user/user-123/"
+<div id="comment-upvote-{{.ID}}" class="text-gray-800">
+            <button class="transition-colors duration-200"
+                hx-post="/upvote/comment/{{.ID}}/user/user-123"
                 hx-trigger="click"
                 hx-target="#comment-upvote-{{.ID}}"
                 hx-swap="outerHTML">
-                    <sl-icon name="caret-up-fill" class="h-7 w-7"></sl-icon>
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 3l8 8h-5v10h-6v-10h-5z"
+                    fill="{{if contains .UpvotedBy "user-123"}}
+                            text-gray-800
+                          {{else}}
+                            none
+                          {{end}}"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    stroke-linejoin="round"/>
+            </svg>
         </button>
-        <!-- Vote count -->
-        <div class="text-lg
-            {{if contains .UpvotedBy "user-123"}}
-                text-lime-600
-            {{end}}">
-                {{.UpvoteCount}}
+            {{.UpvoteCount}}
         </div>
-</div>
 {{ end }}
 
 <!-- NOTE: heres how to use ifs -->

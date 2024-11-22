@@ -12,8 +12,8 @@
 
     <!-- Self-hosted styles and scripts -->
     <!-- <link href="views/assets/tailwind.min.css" rel="stylesheet"> -->
-  <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="views/assets/htmx.min.js"></script>
+    <link href="/assets/output.css" rel="stylesheet">
+    <script defer src="/assets/htmx.min.js"></script>
     <!-- <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script> -->
 
     <style>
@@ -25,8 +25,9 @@
 
 
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
-<body id="background" class="flex justify-center w-full bg-background-gray">
-{{ template "headerBlock" . }}
+<body id="background" class="flex flex-col justify-center w-full bg-background-gray">
+
+    {{ template "headerBlock" . }}
     <!--THESE DOTS ARE OBJECTS -- think inputs------------------------------------>
     <!--so this passes into block count the exact same object that it got--------->
     <!--like saying just pass in stories from the input into template--------->
@@ -57,23 +58,11 @@
 
 
 {{ block "headerBlock" . }}
-<header class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-violet-800/40 via-violet-800/20 via-[60%] to-transparent">
-    <div id="header-inside" class="flex flex-col h-full items-center justify-center max-w-5xl mx-auto align-middle">
-        <a href="/" class="group text-4xl">
-            <h1 class="font-bold">
-                THE ARCHITOCT
-            </h1>
-        </a>
-        <div id="buttons">
-            <button>
-                About
-            </button>
-            <button>
-                Top
-            </button>
-            <button>
-                20
-            </button>
-    </div>
+<header>
+   <a href="/" class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-purple-500/40 via-purple-500/20 via-[60%] to-transparent">
+       <div id="header-inside" class="flex flex-col h-full gap-2 items-center justify-center max-w-5xl mx-auto py-2 px-5 align-middle">
+           <img rel="preload" src="/assets/Architoct.svg" alt="Logo" class="h-3/4 w-auto max-h-[10vh]" />
+       </div>
+   </a>
 </header>
 {{ end }}
