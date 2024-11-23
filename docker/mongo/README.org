@@ -13,3 +13,24 @@ b. POST comment()
 c. POST c_upvote(user_id, comment_id)
 c. POST s_upvote(user_id, story_id)
 
+
+
+** Indexing descions
+#+BEGIN_SRC go
+db.stories.createIndex({ created_at: -1, upvote_count: -1 });
+// BAD: Has to count 20 first 😫
+db.stories
+  .find()
+  .sort({ upvote_count: -1 })
+  .skip(20)    // MongoDB has to scan these 20 first
+  .limit(10)   // then give us next 10
+
+db.stories.createIndex({ upvote_count: -1, _id: 1 });
+// GOOD: Jumps directly to position! 😎
+db.stories
+  .find({
+    upvote_count: { $lt: lastSeenVotes }  // Jumps straight here!
+  })
+  .sort({ upvote_count: -1, _id: -1 })
+  .limit(10)
+#+END_SRC

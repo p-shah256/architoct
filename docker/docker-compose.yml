@@ -4,9 +4,7 @@ networks:
       name: architoct_network
 
 
-
 services:
-
   mongodb:
     image: mongo:latest
     container_name: architocts_db
@@ -53,6 +51,38 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+  # promtail:
+  #   image: grafana/promtail:latest
+  #   container_name: architoct_promtail
+  #   ports:
+  #     - "9080:9080"
+  #   volumes:
+  #     - ../logs:/var/log/architoct:ro
+  #     - ./promtail/config.yml:/etc/promtail/config.yml:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   command: -config.file=/etc/promtail/config.yml
+  #   networks:
+  #     - architoct_network
+  #   depends_on:
+  #     architoct:
+  #       condition: service_healthy
+  #     loki:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget -q --try=1 --spider http://localhost:9080/ready || exit 1"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 10s
+
 
 volumes:
   mongodb_data:

@@ -17,9 +17,8 @@ db.createCollection('users', {
     $jsonSchema: {
       bsonType: 'object',
       required: ['_id', 'created_at'], // _id = fingreprint uuid atm
-      properties: {
+      properties: {                    // and then when they create a username, replace it
         _id: { bsonType: 'string' },
-        user_name: { bsonType: 'string' },
         created_at: { bsonType: 'timestamp' },
         last_login: { bsonType: 'timestamp' }
       }
@@ -41,16 +40,29 @@ db.createCollection('stories', {
         body: { bsonType: 'string' },
         created_at: { bsonType: 'date' },
         // METADATA (needs update frequently) -------------
-        upvote_count: { bsonType: 'int' },
-        upvoted_by: { // user_ids
-          bsonType: 'array', // hashbased structure so retreival is O(1)
-          items: { bsonType: 'string' }  // user_ids
+        upvote_count: {
+          bsonType: 'int',
+          minimum: 0,
+          default: 0
         },
-        reply_count: { bsonType: 'int' },
-        replies: {
+        upvoted_by: {
           bsonType: 'array',
-          items: { bsonType: 'objectId' } // comment_ids
-        }
+          uniqueItems: true,  // Prevent duplicate votes
+          items: { bsonType: 'string' }
+        },
+        reply_count: {
+          bsonType: 'int',
+          minimum: 0,
+          default: 0
+        },
+        // this just creates a breaking point as now you need multidoc transaction
+        // AND harder to keep it consistent
+        // AND makes sorting by upvotes more harder
+        //
+        // replies: {
+        //   bsonType: 'array',
+        //   items: { bsonType: 'objectId' } // comment_ids
+        // }
       }
     }
   }
@@ -70,31 +82,74 @@ db.createCollection('comments', {
         created_at: { bsonType: 'date' },
         is_deleted: { bsonType: 'bool' },
         // META DATA(needs update frequently) --------------
-        upvote_count: { bsonType: 'int' },
-        upvoted_by: { // user_ids
-          bsonType: 'array', // hashbased structure so retreival is O(1)
-          items: { bsonType: 'string' }  // user_ids
+        upvote_count: {
+          bsonType: 'int',
+          minimum: 0,
+          default: 0
+        },
+        upvoted_by: {
+          bsonType: 'array',
+          uniqueItems: true,
+          items: { bsonType: 'string' }
         },
         reply_count: { bsonType: 'int' },
+        // REPLIES(needs update frequently) --------------
         replies: { // stores comment ids here..
           bsonType: 'array',
-          items: {bsonType: 'objectId'}
+          maxItems: 100,  // Enforce limit
+          items: {
+              bsonType: 'object',
+              required: ['_id', 'user_id', 'body', 'created_at'],
+              properties: {
+                _id: { bsonType: 'objectId' },
+                user_id: { bsonType: 'string' },
+                body: { bsonType: 'string' },
+                created_at: { bsonType: 'date' },
+                is_deleted: { bsonType: 'bool' },
+                upvote_count: {
+                  bsonType: 'int',
+                  minimum: 0,
+                  default: 0
+                },
+                upvoted_by: {
+                  bsonType: 'array',
+                  uniqueItems: true,
+                  items: { bsonType: 'string' }
+                }
+              }
+            }
         }
       }
     }
   }
 });
 
-// Create indexes
-// 1. get top x posts in x days
-db.stories.createIndex({ created_at: -1, upvote_count: -1 });
-// 2. get top x comments for x posts
-db.comments.createIndex({ post_id: 1, upvote_count: -1 });
-// 3. check if username conflicts
-db.users.createIndex(
-    { "user_name": 1 },
-    {
-        unique: true,
-        sparse: true  // This means the index won't include documents where user_name is null
-    }
-);
+//STORY INDICES////////////////////////////////////////////////////////////////
+// 1. get top posts sorted by upvotes from 'y' days
+db.stories.createIndex({
+  created_at: -1,        // Primary sort by creation time
+  upvote_count: -1,      // Secondary sort by votes
+  _id: 1                 // Tiebreaker for cursor pagination
+});
+
+// 2. get RECENT posts from 'y' days
+db.stories.createIndex({
+  created_at: -1,        // Primary sort by creation time
+  _id: 1                 // Tiebreaker for cursor pagination
+});
+
+
+//COMMENT INDICES//////////////////////////////////////////////////////////////
+// 1. get top comments sorted by upvotes on 'x' post
+db.comments.createIndex({
+  post_id: 1,            // Filter by post
+  upvote_count: -1,      // Sort by votes
+  _id: 1                 // Tiebreaker for cursor pagination
+});
+
+// 2. get RECENT comments on 'x' post
+db.comments.createIndex({
+  post_id: 1,            // Filter by post
+  created_at: -1,        // Sort by time
+  _id: 1                 // Tiebreaker for cursor pagination
+});
