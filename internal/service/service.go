@@ -8,6 +8,9 @@ package service
 // this is the real buisness logic
 //
 // also this cannot return any ptrs cause HTMX needs actual data
+//
+// IDEALLY this also should have no idea about the DB but ... its just very complex to do it otherwise to handle transactions
+// altho we use nosql if we do not need atomicity but I need it.
 
 import (
 	"architoct/internal/store/mongos"
@@ -15,7 +18,9 @@ import (
 	"context"
 	"log/slog"
 	"time"
-	// "log/slog"
+	"fmt"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // ENUM TO KEEP things simple///////////////////////////////////////////////////
@@ -30,13 +35,16 @@ type ArchitoctService struct {
 	storyStore   *mongos.StoryStore
 	commentStore *mongos.CommentStore
 	userStore    *mongos.UserStore
+	dbClient 	*mongo.Client
 }
 
-func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos.UserStore) *ArchitoctService {
+// DESIGN: abstract these stores..
+func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos.UserStore, dbClient *mongo.Client) *ArchitoctService {
 	return &ArchitoctService{
 		storyStore:   s,
 		commentStore: c,
 		userStore:    u,
+		dbClient: dbClient,
 	}
 }
 
@@ -55,33 +63,49 @@ func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64) 
 }
 
 func (architcot *ArchitoctService) GetStoryPage(ctx context.Context, id string) (types.StoryPage, error) {
-	requestedStory, err := architcot.storyStore.GetByID(ctx, id)
-	if err != nil {
-		return types.StoryPage{}, err
-	}
+    session, err := architcot.dbClient.StartSession()
+    if err != nil {
+        return types.StoryPage{}, err
+    }
+    defer session.EndSession(ctx)
 
-	comments := make([]types.Comment, 0, len(requestedStory.Replies))
-	// not using reply count here cause it might be incosistent failing whole fetch
-	for i := range len(requestedStory.Replies) {
-		comment, err := architcot.commentStore.GetById(ctx, requestedStory.Replies[i])
-		if err != nil {
-			// TODO: think how to handle incosistent comments
-			slog.Error("error while fetching comment for", "storyId", id, "commentId", requestedStory.Replies[i], "err", err)
-			continue
-		}
-		formatComment(comment)
-		comments = append(comments, *comment)
-	}
+    result, err := session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
+        requestedStory, err := architcot.storyStore.GetByID(sessCtx, id)
+        if err != nil {
+            return nil, err
+        }
 
-	// uses pointer so no return needed
-	formatStory(requestedStory)
-	storyPage := types.StoryPage{
-		Story:    *requestedStory,
-		Comments: comments,
-	}
+        comments := make([]types.Comment, 0, len(requestedStory.Replies))
 
-	slog.Info("retruning from getstorypage service", "storypage", storyPage)
-	return storyPage, nil
+        for i := range requestedStory.Replies {
+            comment, err := architcot.commentStore.GetById(sessCtx, requestedStory.Replies[i])
+            if err != nil {
+                // In a transaction, you might want to fail the entire operation if a comment can't be fetched
+                return nil, fmt.Errorf("failed to fetch comment for storyId %s, commentId %s: %w",
+                    id, requestedStory.Replies[i], err)
+            }
+            formatComment(comment)
+            comments = append(comments, *comment)
+        }
+
+        formatStory(requestedStory)
+        storyPage := types.StoryPage{
+            Story:    *requestedStory,
+            Comments: comments,
+        }
+
+        slog.Info("returning from getstorypage service", "storypage", storyPage)
+        return storyPage, nil
+    })
+    if err != nil {
+        return types.StoryPage{}, err
+    }
+
+    storyPage, ok := result.(types.StoryPage)
+    if !ok {
+        return types.StoryPage{}, err
+    }
+    return storyPage, nil
 }
 
 // POST ////////////////////////////////////////////////////////////////////////

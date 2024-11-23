@@ -11,7 +11,6 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 
 	"architoct/internal/service"
 	"architoct/internal/types"
@@ -42,7 +41,6 @@ func NewHtmxHandler(s *service.ArchitoctService) *htmxHandler {
 }
 
 func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
-	e.Use(middleware.Logger())
 	e.Renderer = app.Templates
 
 	// home/get ops
