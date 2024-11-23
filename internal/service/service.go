@@ -13,12 +13,11 @@ package service
 // altho we use nosql if we do not need atomicity but I need it.
 
 import (
+	"architoct/internal/logger"
 	"architoct/internal/store/mongos"
 	"architoct/internal/types"
 	"context"
-	"log/slog"
 	"time"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -62,55 +61,36 @@ func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64) 
 	return stories, nil
 }
 
-func (architcot *ArchitoctService) GetStoryPage(ctx context.Context, id string) (types.StoryPage, error) {
-    session, err := architcot.dbClient.StartSession()
+func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string) (types.StoryPage, error) {
+    requestedStory, err := architect.storyStore.GetByID(ctx, id)
     if err != nil {
         return types.StoryPage{}, err
     }
-    defer session.EndSession(ctx)
 
-    result, err := session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
-        requestedStory, err := architcot.storyStore.GetByID(sessCtx, id)
+    comments := make([]types.Comment, 0, len(requestedStory.Replies))
+    for i := range requestedStory.Replies {
+        comment, err := architect.commentStore.GetById(ctx, requestedStory.Replies[i])
+		// if one comment fails, log and igonre
         if err != nil {
-            return nil, err
+			logger.L.Error().
+				Str("error", "failed to fetch comment for storyId").
+				Str("story", id).
+				Str("comment", requestedStory.Replies[i])
         }
-
-        comments := make([]types.Comment, 0, len(requestedStory.Replies))
-
-        for i := range requestedStory.Replies {
-            comment, err := architcot.commentStore.GetById(sessCtx, requestedStory.Replies[i])
-            if err != nil {
-                // In a transaction, you might want to fail the entire operation if a comment can't be fetched
-                return nil, fmt.Errorf("failed to fetch comment for storyId %s, commentId %s: %w",
-                    id, requestedStory.Replies[i], err)
-            }
-            formatComment(comment)
-            comments = append(comments, *comment)
-        }
-
-        formatStory(requestedStory)
-        storyPage := types.StoryPage{
-            Story:    *requestedStory,
-            Comments: comments,
-        }
-
-        slog.Info("returning from getstorypage service", "storypage", storyPage)
-        return storyPage, nil
-    })
-    if err != nil {
-        return types.StoryPage{}, err
+        formatComment(comment)
+        comments = append(comments, *comment)
     }
 
-    storyPage, ok := result.(types.StoryPage)
-    if !ok {
-        return types.StoryPage{}, err
-    }
-    return storyPage, nil
+    formatStory(requestedStory)
+    return types.StoryPage{
+        Story:    *requestedStory,
+        Comments: comments,
+    }, nil
 }
 
 // POST ////////////////////////////////////////////////////////////////////////
 func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType ContentType, id string, userid string) (any, error) {
-	slog.Info("upvoting...", "comment", contentType, "id", id)
+	logger.Debug().Any("comment", contentType).Str("id", id).Str("userid", userid).Msg("upvoting")
 	if contentType == TypeComment {
 		updatedComment, err := architcot.commentStore.ToggleUpvote(ctx, id, userid)
 		return updatedComment, err
@@ -126,10 +106,9 @@ func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType Conte
 // how expensive is this extra visit to DB? in term of latency claude says ~0.1-1ms for local
 func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) error {
 	if contentType == TypeComment {
-		slog.Info("Commenting on a comment")
 		parentComment, err := architcot.commentStore.GetById(ctx, parentid)
 		if err != nil {
-			return err
+			return types.ErrCommentNotFound
 		}
 		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
 			PostID:    parentComment.PostID,
@@ -138,11 +117,10 @@ func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string,
 			CreatedAt: time.Now(),
 		})
 		if err != nil {
-			return err
+			return types.ErrCommentNotPosted
 		}
 		return architcot.commentStore.AddReply(ctx, parentid, commentID)
 	} else {
-		slog.Info("Commenting on a story")
 		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
 			PostID:    parentid,
 			Body:      body,
@@ -167,11 +145,11 @@ func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, 
 
 func (architcot *ArchitoctService) User(ctx context.Context, userid string, username string) error {
 	if username=="" {
-		slog.Info("createing a user", )
+		// slog.Info("createing a user", )
 		_,  err := architcot.userStore.Create(ctx, userid)
 		return err
 	} else {
-		slog.Info("updating name,,,,,", )
+		// slog.Info("updating name,,,,,", )
 		_, err := architcot.userStore.UpdateName(ctx, userid, username)
 		return err
 	}

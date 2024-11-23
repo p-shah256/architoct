@@ -5,9 +5,7 @@ package handlers
 // if we need pure api we need other handler
 
 import (
-	// "log/slog"
-
-	"log/slog"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -72,7 +70,7 @@ func (app *htmxHandler) handleGetHome(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Render(200, "baseLayout", PageData{
+	return c.Render(http.StatusOK, "baseLayout", PageData{
 		PageType: PageTypeHome,
 		Data:     stories,
 	})
@@ -84,9 +82,9 @@ func (app *htmxHandler) handleGetStory(c echo.Context) error {
 		return err
 	}
 	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(200, "storyContent", story)
+		return c.Render(http.StatusOK, "storyContent", story)
 	} else {
-		return c.Render(200, "baseLayout", PageData{
+		return c.Render(http.StatusOK, "baseLayout", PageData{
 			PageType: PageTypeStory,
 			Data:     story,
 		})
@@ -104,7 +102,7 @@ func (app *htmxHandler) handlePostSVote(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Render(200, "singleStoryBlock", updatedStory)
+	return c.Render(http.StatusOK, "singleStoryBlock", updatedStory)
 }
 
 func (app *htmxHandler) handlePostCVote(c echo.Context) error {
@@ -112,7 +110,7 @@ func (app *htmxHandler) handlePostCVote(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Render(200, "commentUpvoteMarker", updatedComment)
+	return c.Render(http.StatusOK, "commentUpvoteMarker", updatedComment)
 }
 
 // not returning an HTMX here cause let them refresh
@@ -122,7 +120,6 @@ func (app *htmxHandler) handlePostScomment(c echo.Context) error {
 }
 
 func (app *htmxHandler) handlePostCcomment(c echo.Context) error {
-	slog.Info("got request for a comment on a comment")
 	return app.service.Comment(c.Request().Context(), c.Param("commentid"), c.Param("userid"), c.FormValue("body"), service.TypeComment)
 }
 

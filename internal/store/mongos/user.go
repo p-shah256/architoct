@@ -2,9 +2,9 @@ package mongos
 
 import (
 	"context"
-	"log/slog"
 	"time"
 
+	"architoct/internal/logger"
 	"architoct/internal/types"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -39,12 +39,12 @@ func (s *UserStore) Create(ctx context.Context, userid string) (*types.User, err
 		LastLogin:   time.Now(),
 	}
 	_, err = s.users.InsertOne(ctx, user)
-	slog.Info("user create status", "err", err)
+	logger.Debug().Err(err).Msg("user create status")
 	return &user, err
 }
 
 func (s *UserStore) UpdateName(ctx context.Context, userid string, username string) (*types.User, error) {
-	slog.Info("updating name......", )
+	logger.Debug().Msg("Request to updatename @ store")
     var updatedUser types.User
     err := s.users.FindOneAndUpdate(ctx,
         bson.M{"_id": userid},
@@ -55,7 +55,6 @@ func (s *UserStore) UpdateName(ctx context.Context, userid string, username stri
     if err != nil {
         switch {
         case mongo.IsDuplicateKeyError(err):
-			slog.Error("already taken")
             return nil, types.ErrUsernameTaken
         case err == mongo.ErrNoDocuments:
             return nil, types.ErrUsernameTaken
@@ -64,6 +63,6 @@ func (s *UserStore) UpdateName(ctx context.Context, userid string, username stri
         }
     }
 
-	slog.Info("updating name...... no erros", )
+	logger.L.Debug().Msg("Name updated @ store")
     return &updatedUser, nil
 }

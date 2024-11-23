@@ -3,9 +3,9 @@
 package mongos
 
 import (
+	"architoct/internal/logger"
 	"architoct/internal/types"
 	"context"
-	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,9 +30,10 @@ func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) (stri
 	if err != nil {
 		return "", err
 	}
-	slog.Info("returning ID", "id", result.InsertedID.(primitive.ObjectID).Hex())
+	logger.L.Debug().
+		Str("id", result.InsertedID.(primitive.ObjectID).Hex()).
+		Msg("returning ID")
 	id := result.InsertedID.(primitive.ObjectID).Hex()
-	slog.Info("returning ID", "id", id)
 	return id, nil
 }
 
@@ -65,7 +66,7 @@ func (s *CommentStore) AddReply(ctx context.Context, parentCommentId string, com
 		if err == mongo.ErrNoDocuments {
 			return err
 		}
-		return err
+		return types.ErrCommentNotPosted
 	}
 	_, err = s.comments.UpdateOne(ctx, bson.M{"_id": parentid}, bson.M{"$inc": bson.M{"reply_count": 1}})
 	return err
