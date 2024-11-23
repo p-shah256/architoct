@@ -30,14 +30,12 @@
 
 {{ block "singleComment" . }}
     <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
-
         <div id="comment-metadata-{{.ID}}" class="text-gray-400">
-        {{.UserID}} {{.TimeAgo}}
+            {{.UserID}} {{.TimeAgo}}
         </div>
         <div id="content-body-{{.ID}}" class="">
             {{.Body}}
         </div>
-
         <div id="comment-metadata-{{.ID}}" class="flex justify-between items-center text-gray-400">
             <div id="left" class="flex gap-4">
                 {{ template "commentUpvoteMarker" . }}
@@ -45,47 +43,54 @@
                     🗨️ Reply
                 </button>
             </div>
+        {{ if .Replies }}
+        <button class="text-gray-800 hover:text-gray-700 rounded-xl p-1 text-xs"
+                hx-target="#comment-replies-{{.ID}}" hx-trigger="click"
+                hx-get="/replies/comment/{{.ID}}" hx-swap="innerHTML show:top">
+                ➕ {{ .ReplyCount }} more replies
+        </button>
+        {{ end }}
         </div>
-
-        <div id="reply-{{.ID}}" style="display: none" class="relative">
-            <div class="relative">
+        <div id="comment-add-reply-{{.ID}}" style="display: none" class="relative">
+            <form class="relative" hx-post="/comment/comment/{{.ID}}/user/user123">
                 <textarea
                     name="reply-body"
                     placeholder="What would you add?"
                     class="w-full resize-none border-none focus:ring-0 sm:text-sm pr-20 p-2"
                     rows="4"
                 ></textarea>
-                <button type="submit" class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl p-2 hover:bg-violet-300 transition-colors"
-                    hx-trigger="click" hx-post="/comment/comment/{{.ID}}/user/user123" hx-include="closest div textarea[name='reply-body']"
-                >Post</button>
-            </div>
+                <button type="submit"
+                    class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl p-2 hover:bg-violet-300 transition-colors">
+                    Post
+                </button>
+            </form>
         </div>
 
-        {{ if .Replies }}
-        <div id="replies-{{.ID}}" class="pl-4">
-            {{ range .Replies }}
-                {{ template "singleComment" . }}
-            {{ end }}
+        <div id="comment-replies-{{.ID}}" class="pl-4 hidden">
+            {{ template "comment-replies" . }}
         </div>
-        {{ end }}
+
     </div>
+
 <script>
 function showReply(id) {
-    const form = document.getElementById('reply-' + id);
+    const form = document.getElementById('comment-add-reply-' + id);
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 {{ end }}
 
+{{ block "comment-replies" . }}
+    {{ range .Replies }}
+        {{ template "singleComment" . }}
+    {{ end }}
+{{ end }}
+
+
 <!-- NOTE: actually does the parsing by itself to see if upvoted or not --
   -- "contains" had to be registerred as a function in templates.go-->
 {{ block "storyUpvoteMarker" . }}
 <div id="upvote-{{.ID}}" class="flex flex-col items-center text-gray-850">
-        <!-- <\!-- Debug info -\-> -->
-        <!-- <div class="text-xs text-gray-500"> -->
-        <!--     UpvotedBy: {{.UpvotedBy}} -->
-        <!--     Contains user-123: {{contains .UpvotedBy "user-123"}} -->
-        <!-- </div> -->
         <button class="transition-colors duration-200"
                 hx-post="/upvote/story/{{.ID}}/user/user-123"
                 hx-trigger="click"
@@ -131,13 +136,3 @@ function showReply(id) {
             {{.UpvoteCount}}
         </div>
 {{ end }}
-
-<!-- NOTE: heres how to use ifs -->
-<!--
-     {{if contains .UpvotedBy "user-123"}}
-     text-gray-850
-     {{else}}
-     text-gray-400
-     {{end}} -->
-
-            <!-- onclick="if(!this.querySelector('path').getAttribute('fill').includes('gray-850')) confetti()" -->

@@ -1,26 +1,80 @@
 {{ block "baseLayout" . }}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Architoct</title>
-
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
-
-    <!-- Self-hosted styles and scripts -->
-    <!-- <link href="views/assets/tailwind.min.css" rel="stylesheet"> -->
     <link href="/assets/output.css" rel="stylesheet">
     <script defer src="/assets/htmx.min.js"></script>
-    <!-- <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script> -->
-
     <style>
     .bg-custom-lime {
         background-color: #e4f8b4;
     }
     </style>
+
+    <script>
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function initializeUser() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = generateUUID();
+                localStorage.setItem('userId', userId);
+                console.log("New session created with ID:", userId);
+            } else {
+                console.log("Existing session resumed with ID:", userId);
+            }
+            let displayName = localStorage.getItem('userDisplayName');
+            return { userId, displayName };
+        }
+
+        function promptForNameIfNeeded() {
+            if (!localStorage.getItem('userDisplayName')) {
+                const name = prompt('What should we engrave on your virtual drafting table? (100% anonymous, Mies van der Roast is taken)');
+                if (name) {
+                    localStorage.setItem('userDisplayName', name);
+                }
+            }
+        }
+
+        // Wait for HTMX to be loaded
+        document.addEventListener('htmx:load', function() {
+            htmx.on('htmx:configRequest', function(evt) {
+                promptForNameIfNeeded();
+                const user = initializeUser();
+                evt.detail.headers['X-User-ID'] = user.userId;
+                if (user.displayName) {
+                    evt.detail.headers['X-Display-Name'] = user.displayName;
+                }
+            });
+        });
+
+        // Backup initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM Content loaded");
+            if (typeof htmx !== 'undefined') {
+                htmx.on('htmx:configRequest', function(evt) {
+                    promptForNameIfNeeded();
+                    const user = initializeUser();
+                    evt.detail.headers['X-User-ID'] = user.userId;
+                    if (user.displayName) {
+                        evt.detail.headers['X-Display-Name'] = user.displayName;
+                    }
+                });
+            }
+        });
+
+        const initialUser = initializeUser();
+</script>
 </head>
 
 

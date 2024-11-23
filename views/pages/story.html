@@ -1,18 +1,29 @@
-<!-- this block will be using targeted rendering ... WITHOUT BASE -->
-{{ define "storyContent" }}  <!-- Use define instead of block here -->
+{{ define "storyContent" }}
     {{template "singleStoryBlock" .Story}}
+
     <div id="body" class="p-3" >
         {{ .Story.Body }}
     </div>
 
+    <div class="font-bold text-text-primary bg-custom-lime p-3 w-fit rounded-xl">
+            Discussions
+    </div>
+
+    <form id="newComment" class="p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+        <div id="body" class="relative">
+            <textarea class="w-full resize-none border-none focus:ring-0 sm:text-sm pr-20" rows="4"
+                      placeholder="What would you add?"></textarea>
+            <button type="submit" class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl px-4 py-1 hover:bg-violet-300 transition-colors"
+                hx-trigger="click" hx-push-url="false" hx-post="/comment/story/{{.Story.ID}}/user/username"
+            >Post!</button>
+        </div>
+    </form>
+
     <!-- Comments Section -->
     <div id="comments-section" class="flex flex-col gap-4 mt-6">
-        <div class="font-bold text-text-primary bg-custom-lime p-3 w-fit rounded-xl">
-            Discussions
-        </div>
-
         {{ range .Comments }}
         {{ template "singleComment" . }}
         {{ end }}
     </div>
+
 {{ end }}
