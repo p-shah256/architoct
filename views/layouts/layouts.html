@@ -26,7 +26,8 @@
                 });
                 localStorage.setItem('userId', userId);
                 htmx.ajax('POST', '/user/init', {
-                    headers: {'X-User-ID': userId}
+                    headers: {'X-User-ID': userId},
+                    swap: 'none',  // Explicitly tell HTMX not to swap content
                 });
             }
             return userId;
@@ -48,6 +49,7 @@
                                     'X-User-ID': userId,
                                     'X-Display-Name': name,
                                 },
+                                swap: 'none',  // Explicitly tell HTMX not to swap content
                             });
                             htmx.trigger(evt.detail.elt, 'click');
                         }
@@ -55,8 +57,7 @@
                     }
                     evt.detail.requestConfig.headers['X-User-ID'] = userId;
                     evt.detail.requestConfig.headers['X-Display-Name'] = displayName;
-                }
-            });
+                }});
         });
     </script>
 </head>
