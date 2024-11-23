@@ -40,7 +40,7 @@ func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos
 	}
 }
 
-// GET //////////////////////////////////////////////////////////////////////
+// PAGE GETS //////////////////////////////////////////////////////////////////////
 // TODO: add ability for infinite scrolling
 func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64) ([]types.Story, error) {
 	stories, err := architcot.storyStore.GetRecent(ctx, 20, page)
@@ -65,7 +65,9 @@ func (architcot *ArchitoctService) GetStoryPage(ctx context.Context, id string) 
 	for i := range len(requestedStory.Replies) {
 		comment, err := architcot.commentStore.GetById(ctx, requestedStory.Replies[i])
 		if err != nil {
-			return types.StoryPage{}, err
+			// TODO: think how to handle incosistent comments
+			slog.Error("error while fetching comment for", "storyId", id, "commentId", requestedStory.Replies[i], "err", err)
+			continue
 		}
 		formatComment(comment)
 		comments = append(comments, *comment)
@@ -78,6 +80,7 @@ func (architcot *ArchitoctService) GetStoryPage(ctx context.Context, id string) 
 		Comments: comments,
 	}
 
+	slog.Info("retruning from getstorypage service", "storypage", storyPage)
 	return storyPage, nil
 }
 
@@ -136,4 +139,16 @@ func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, 
 		UserID: userid,
 		Title: title,
 	})
+}
+
+func (architcot *ArchitoctService) User(ctx context.Context, userid string, username string) error {
+	if username=="" {
+		slog.Info("createing a user", )
+		_,  err := architcot.userStore.Create(ctx, userid)
+		return err
+	} else {
+		slog.Info("updating name,,,,,", )
+		_, err := architcot.userStore.UpdateName(ctx, userid, username)
+		return err
+	}
 }

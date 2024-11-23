@@ -12,6 +12,7 @@ import (
 // User represents a user in the system
 type User struct {
 	ID        string    `bson:"_id"`
+	Name        string    `bson:"user_name,omitempty"`
 	CreatedAt time.Time `bson:"created_at,omitempty"`
 	LastLogin time.Time `bson:"last_login,omitempty"`
 }

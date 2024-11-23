@@ -67,7 +67,8 @@ func (s *CommentStore) AddReply(ctx context.Context, parentCommentId string, com
 		}
 		return err
 	}
-	return nil
+	_, err = s.comments.UpdateOne(ctx, bson.M{"_id": parentid}, bson.M{"$inc": bson.M{"reply_count": 1}})
+	return err
 }
 
 func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {

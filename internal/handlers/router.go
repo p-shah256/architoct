@@ -7,12 +7,14 @@ package handlers
 import (
 	// "log/slog"
 
+	"log/slog"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	"architoct/internal/service"
+	"architoct/internal/types"
 )
 
 type PageData struct {
@@ -43,16 +45,22 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Renderer = app.Templates
 
+	// home/get ops
 	e.GET("/", app.handleGetHome)
 	e.GET("/story/:id", app.handleGetStory)
 
-	// e.POST("/story/user/:userid", app.postStory)
+	// user ops
+	e.POST("/user/init", app.handleUser)
+	e.POST("/user/name", app.handleUser)
 
+	// story ops
 	e.POST("/upvote/story/:storyid/user/:userid", app.handlePostSVote)
-	e.POST("/upvote/comment/:commentid/user/:userid", app.handlePostCVote)
-
 	e.POST("/comment/story/:storyid/user/:userid", app.handlePostScomment)
+
+	// comment ops
 	e.POST("/comment/comment/:commentid/user/:userid", app.handlePostCcomment)
+	e.POST("/upvote/comment/:commentid/user/:userid", app.handlePostCVote)
+	e.GET("/replies/comment/:commentid", app.handleGetCreplies)
 }
 
 // TODO: verify if infinite scroll works fine
@@ -87,6 +95,11 @@ func (app *htmxHandler) handleGetStory(c echo.Context) error {
 	}
 }
 
+// TODO: implement this
+func (app *htmxHandler) handleGetCreplies(c echo.Context) error {
+	return nil
+}
+
 // POST HANDLERS //////////////////////////////////////////////////////////////
 func (app *htmxHandler) handlePostSVote(c echo.Context) error {
 	updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("storyid"), c.Param("userid"))
@@ -111,9 +124,26 @@ func (app *htmxHandler) handlePostScomment(c echo.Context) error {
 }
 
 func (app *htmxHandler) handlePostCcomment(c echo.Context) error {
+	slog.Info("got request for a comment on a comment")
 	return app.service.Comment(c.Request().Context(), c.Param("commentid"), c.Param("userid"), c.FormValue("body"), service.TypeComment)
 }
 
 func (app *htmxHandler) handlePostStory(c echo.Context) error {
 	return app.service.NewStory(c.Request().Context(), c.Param("userid"), c.FormValue("body"), c.FormValue("title"))
+}
+
+func (app *htmxHandler) handleUser(c echo.Context) error{
+	userId := c.Request().Header.Get("X-User-ID")
+	// if not present it will be empty string .. indicating it is a create
+	// if present indicates update username
+    userName := c.Request().Header.Get("X-Display-Name")
+	err := app.service.User(c.Request().Context(), userId, userName)
+	if err != nil {
+		switch err{
+		// TODO: handle this send a message
+		case types.ErrUsernameTaken:
+			return nil
+		}
+	}
+	return nil
 }

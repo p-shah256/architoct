@@ -16,9 +16,10 @@ db.createCollection('users', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
-      required: ['_id', 'created_at'], // _id = fingreprint.js atm
+      required: ['_id', 'created_at'], // _id = fingreprint uuid atm
       properties: {
         _id: { bsonType: 'string' },
+        user_name: { bsonType: 'string' },
         created_at: { bsonType: 'timestamp' },
         last_login: { bsonType: 'timestamp' }
       }
@@ -77,7 +78,7 @@ db.createCollection('comments', {
         reply_count: { bsonType: 'int' },
         replies: { // stores comment ids here..
           bsonType: 'array',
-          items: {bsonType: 'string'}
+          items: {bsonType: 'objectId'}
         }
       }
     }
@@ -89,3 +90,11 @@ db.createCollection('comments', {
 db.stories.createIndex({ created_at: -1, upvote_count: -1 });
 // 2. get top x comments for x posts
 db.comments.createIndex({ post_id: 1, upvote_count: -1 });
+// 3. check if username conflicts
+db.users.createIndex(
+    { "user_name": 1 },
+    {
+        unique: true,
+        sparse: true  // This means the index won't include documents where user_name is null
+    }
+);
