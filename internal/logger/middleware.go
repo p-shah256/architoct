@@ -34,6 +34,7 @@ func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
                 Str("user_agent", req.UserAgent()).
                 Str("remote_ip", c.RealIP()).
                 Dur("latency", time.Since(start)).
+                Caller(1).
                 // Interface("headers", req.Header).
                 Send()
         }

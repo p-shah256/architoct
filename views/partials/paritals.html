@@ -9,16 +9,16 @@
     {{ template "storyUpvoteMarker" . }}
 
     <div id="data" class="flex flex-col">
-        <div class="title hover:underline font-bold cursor-pointer"
-             hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
+        <div class="title hover:underline font-bold cursor-pointer" hx-get="/story/{{.ID}}" hx-push-url="true"
+            hx-target="#inside" hx-trigger="click">
             {{.Title}}
         </div>
         <div id="metadata" class="flex space-x-4 py-1 divide-x divide-gray-500">
             <div class="user">
                 via {{.UserID}} {{.TimeAgo}}
             </div>
-            <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer"
-                 hx-get="/story/{{.ID}}" hx-push-url="true" hx-target="#inside" hx-trigger="click">
+            <div id="numberOfComments" class="pl-4 hover:underline cursor-pointer" hx-get="/story/{{.ID}}"
+                hx-push-url="true" hx-target="#inside" hx-trigger="click">
                 {{.ReplyCount}} comments
             </div>
         </div>
@@ -40,16 +40,24 @@
                 🗨️ Reply
             </button>
         </div>
+        {{if .Replies}}
+        <button hx-get="/comments/replies/{{.ID}}" hx-target="#replies-{{.ID}}" hx-swap="innerHTML"
+            class="text-xs text-gray-800 hover:text-gray-700 rounded-xl p-1">
+            💬 {{.ReplyCount}} {{if eq .ReplyCount 1}}reply{{else}}replies{{end}}
+        </button>
+        {{end}}
     </div>
     <form id="reply-form-{{.ID}}"
         class="hidden p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
-        hx-post="/comment/comment/{{.ID}}"
-        hx-include="[name='body']">
-        <!-- TODO: INPUTS INTO THIS ARE REDUNDATN -->
+        hx-post="/comment/comment/{{.ID}}" hx-target="#reply-form-{{.ID}}" hx-swap="afterend" hx-include="[name='body']"
+        hx-on::after-request="if(event.detail.successful) {
+            this.reset();
+            this.querySelector('.pell-content').innerHTML = '';
+            this.querySelector('[name=body]').value = '';
+        }">
         {{template "pellEditor" dict "hxPost" (print "/comment/story/" .ID)}}
     </form>
-    <div id="replies-{{.ID}}" class="pl-4 hidden">
-        {{ template "comment-replies" . }}
+    <div id="replies-{{.ID}}">
     </div>
 </div>
 
@@ -62,9 +70,9 @@
 {{ end }}
 
 {{ block "comment-replies" . }}
-    {{ range .Replies }}
-        {{ template "singleComment" . }}
-    {{ end }}
+{{ range . }}
+{{ template "singleComment" . }}
+{{ end }}
 {{ end }}
 
 
@@ -72,48 +80,34 @@
   -- "contains" had to be registerred as a function in templates.go-->
 {{ block "storyUpvoteMarker" . }}
 <div id="upvote-{{.ID}}" class="flex flex-col items-center text-gray-850">
-        <button class="transition-colors duration-200"
-                hx-post="/upvote/story/{{.ID}}"
-                hx-trigger="click"
-                hx-target="#story-{{.ID}}"
-                hx-swap="outerHTML">
-            <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M12 3l8 8h-5v10h-6v-10h-5z"
-                    fill="{{if .HasUpvoted}}
+    <button class="transition-colors duration-200" hx-post="/upvote/story/{{.ID}}" hx-trigger="click"
+        hx-target="#story-{{.ID}}" hx-swap="outerHTML">
+        <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 3l8 8h-5v10h-6v-10h-5z" fill="{{if .HasUpvoted}}
                             text-gray-850
                           {{else}}
                             none
-                          {{end}}"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linejoin="round"/>
-            </svg>
-        </button>
-        <div >
-                {{.UpvoteCount}}
-        </div>
+                          {{end}}" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+        </svg>
+    </button>
+    <div>
+        {{.UpvoteCount}}
+    </div>
 </div>
 {{ end }}
 
 {{ block "commentUpvoteMarker" . }}
 <div id="comment-upvote-{{.ID}}" class="text-gray-800">
-            <button class="transition-colors duration-200"
-                hx-post="/upvote/comment/{{.ID}}/user/user-123"
-                hx-trigger="click"
-                hx-target="#comment-upvote-{{.ID}}"
-                hx-swap="outerHTML">
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M12 3l8 8h-5v10h-6v-10h-5z"
-                    fill="{{if .HasUpvoted }}
+    <button class="transition-colors duration-200" hx-post="/upvote/comment/{{.ID}}" hx-trigger="click"
+        hx-target="#comment-upvote-{{.ID}}" hx-swap="outerHTML">
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 3l8 8h-5v10h-6v-10h-5z" fill="{{if .HasUpvoted }}
                             text-gray-800
                           {{else}}
                             none
-                          {{end}}"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linejoin="round"/>
-            </svg>
-        </button>
-            {{.UpvoteCount}}
-        </div>
+                          {{end}}" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+        </svg>
+    </button>
+    {{.UpvoteCount}}
+</div>
 {{ end }}

@@ -19,8 +19,8 @@ db.createCollection('users', {
       required: ['_id', 'created_at'], // _id = fingreprint uuid atm
       properties: {                    // and then when they create a username, replace it
         _id: { bsonType: 'string' },
-        created_at: { bsonType: 'timestamp' },
-        last_login: { bsonType: 'timestamp' }
+        created_at: { bsonType: 'date' },
+        last_login: { bsonType: 'date' }
       }
     }
   }
@@ -72,7 +72,7 @@ db.createCollection('comments', {
       required: ['user_id', 'body', 'post_id', 'created_at'], //_id will be auto
       properties: {
         // COMMENT DATA -----------------------------------
-        // _id: {bsonType: 'string'}, // lets use auto
+        _id: {bsonType: 'objectId'},
         post_id: { bsonType: 'string' }, //nanoID maybe with 4 chars
         user_id: { bsonType: 'string' },
         body: { bsonType: 'string' },
@@ -89,29 +89,10 @@ db.createCollection('comments', {
           items: { bsonType: 'string' }
         },
         reply_count: { bsonType: 'int' },
-        // REPLIES(needs update frequently) --------------
         replies: { // stores comment ids here..
           bsonType: 'array',
-          maxItems: 100,  // Enforce limit
           items: {
-            bsonType: 'object',
-            required: ['_id', 'user_id', 'body', 'created_at'],
-            properties: {
-              _id: { bsonType: 'objectId' },
-              user_id: { bsonType: 'string' },
-              body: { bsonType: 'string' },
-              created_at: { bsonType: 'date' },
-              is_deleted: { bsonType: 'bool' },
-              upvote_count: {
-                bsonType: 'int',
-                minimum: 0,
-              },
-              upvoted_by: {
-                bsonType: 'array',
-                uniqueItems: true,
-                items: { bsonType: 'string' }
-              }
-            }
+            bsonType: 'objectId',
           }
         }
       }

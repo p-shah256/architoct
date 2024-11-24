@@ -23,7 +23,7 @@ func NewUserStore(db *mongo.Database) *UserStore {
 
 // OPERATIONS /////////////////////////////////////////////////////////////////
 func (s *UserStore) Create(ctx context.Context, userid string) (*types.User, error) {
-	logger.Debug().Str("userid", userid)
+	logger.Debug().Str("userid", userid).Msg("store")
 	var user types.User
 	user = types.User{
 		ID: userid,
@@ -31,6 +31,6 @@ func (s *UserStore) Create(ctx context.Context, userid string) (*types.User, err
 		LastLogin:   time.Now(),
 	}
 	_, err := s.users.InsertOne(ctx, user)
-	logger.Debug().Err(err).Msg("user create status")
+	logger.L.Err(err).Msg("user create status")
 	return &user, err
 }

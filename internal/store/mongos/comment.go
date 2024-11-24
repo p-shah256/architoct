@@ -25,12 +25,12 @@ func NewCommentStore(db *mongo.Database) *CommentStore {
 }
 
 // OPERATIONS /////////////////////////////////////////////////////////////////
-func (s *CommentStore) Create(ctx context.Context, comment *types.Comment) (string, error) {
+func (s *CommentStore) InsertToDB(ctx context.Context, comment *types.Comment) (string, error) {
 	result, err := s.comments.InsertOne(ctx, comment)
 	if err != nil {
 		return "", err
 	}
-	logger.L.Debug().
+	logger.Debug().
 		Str("id", result.InsertedID.(primitive.ObjectID).Hex()).
 		Msg("returning ID")
 	id := result.InsertedID.(primitive.ObjectID).Hex()
@@ -53,23 +53,24 @@ func (s *CommentStore) GetById(ctx context.Context, commentId string) (*types.Co
 	return &comment, nil
 }
 
-func (s *CommentStore) AddReply(ctx context.Context, parentCommentId string, commentId string) (error) {
-	// TODO: add celebration effect here and for story
-	commentid, err := primitive.ObjectIDFromHex(commentId)
-	parentid, err := primitive.ObjectIDFromHex(parentCommentId)
-	if err != nil {
+func (s *CommentStore) AddToRepliesArray(ctx context.Context, parentCommentId string, commentId string) error {
+    commentid, _ := primitive.ObjectIDFromHex(commentId)
+    parentid, _ := primitive.ObjectIDFromHex(parentCommentId)
+    _ , err := s.comments.UpdateOne(
+        ctx,
+        bson.M{"_id": parentid},
+        bson.M{
+            "$push": bson.M{"replies": commentid},
+            "$inc": bson.M{"reply_count": 1},
+        },
+    )
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return err
+        }
 		return err
-	}
-
-	_, err = s.comments.UpdateOne(ctx, bson.M{"_id": parentid}, bson.M{"$push": bson.M{"replies": commentid}})
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return err
-		}
-		return types.ErrCommentNotPosted
-	}
-	_, err = s.comments.UpdateOne(ctx, bson.M{"_id": parentid}, bson.M{"$inc": bson.M{"reply_count": 1}})
-	return err
+    }
+    return nil
 }
 
 func (s *CommentStore) SoftDelete(ctx context.Context, commentID string) error {
@@ -109,6 +110,5 @@ func (s *CommentStore) ToggleUpvote(ctx context.Context, commentID string, userI
         return updatedComment, err
     }
 
-	// else return true
-    return updatedComment, err
+    return updatedComment, nil
 }

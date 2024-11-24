@@ -63,21 +63,49 @@ func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64, 
 	return stories, nil
 }
 
+func (architcot *ArchitoctService) GetCommentReplies(ctx context.Context, commentid string, userid string) ([]types.Comment, error) {
+	requestedComment, err := architcot.commentStore.GetById(ctx, commentid)
+	if err != nil {
+		return nil, types.ErrCommentNotFound
+	}
+
+    comments := make([]types.Comment, 0, len(requestedComment.Replies))
+	for i := range requestedComment.Replies {
+        comment, err := architcot.commentStore.GetById(ctx, requestedComment.Replies[i])
+        if err != nil { // if one comment fails, log and igonre
+			logger.L.Error().
+				Err(err).
+				Caller().
+				Str("fetching comment", comment.Replies[i]).
+				Str("commentid", commentid).
+				Msg("failed to fetch comment")
+            continue
+        }
+		comment.SetUserSpecificData(userid)
+        formatComment(comment)
+        comments = append(comments, *comment)
+	}
+
+	logger.Debug().Any("returning comments", comments).Msg("From getcommentreplies service")
+	return comments, nil
+}
+
 func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string, userid string) (types.StoryPage, error) {
     requestedStory, err := architect.storyStore.GetByID(ctx, id)
     if err != nil {
         return types.StoryPage{}, err
     }
-
     comments := make([]types.Comment, 0, len(requestedStory.Replies))
     for i := range requestedStory.Replies {
         comment, err := architect.commentStore.GetById(ctx, requestedStory.Replies[i])
-		// if one comment fails, log and igonre
-        if err != nil {
+        if err != nil { // if one comment fails, log and igonre
 			logger.L.Error().
-				Str("error", "failed to fetch comment for storyId").
+				Err(err).
+				Caller().
+				Str("fetching comment", requestedStory.Replies[i]).
 				Str("story", id).
-				Str("comment", requestedStory.Replies[i])
+				Msg("failed to fetch comment")
+            continue
         }
         formatComment(comment)
 		comment.SetUserSpecificData(userid)
@@ -85,8 +113,8 @@ func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string, 
     }
 	requestedStory.SetUserSpecificData(userid)
     formatStory(requestedStory)
-	logger.Debug().Any("returning", *requestedStory).Msg("From getstorypage service")
-	logger.Debug().Any("returning", comments).Msg("From getstorypage service")
+	logger.Debug().Any("returning story", *requestedStory).Msg("From getstorypage service")
+	logger.Debug().Any("returning comments", comments).Msg("From getstorypage service")
     return types.StoryPage{
         Story:    *requestedStory,
         Comments: comments,
@@ -96,8 +124,12 @@ func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string, 
 // POST ////////////////////////////////////////////////////////////////////////
 func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType ContentType, id string, userid string) (any, error) {
 	logger.Debug().Any("comment", contentType).Str("id", id).Str("userid", userid).Msg("upvoting")
+	if userid == "" {
+		return nil, types.ErrUserNotFound
+	}
 	if contentType == TypeComment {
 		updatedComment, err := architcot.commentStore.ToggleUpvote(ctx, id, userid)
+		updatedComment.SetUserSpecificData(userid)
 		return updatedComment, err
 	} else {
 		updatedStory, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
@@ -110,48 +142,82 @@ func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType Conte
 // 1. maybe send a postid with the request.. but that makes the api incosistent
 // 2. let db layer handle adding postid to the comment... honestly the postid is not even required here
 // how expensive is this extra visit to DB? in term of latency claude says ~0.1-1ms for local
-func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) error {
+func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string, userid string, body string, contentType ContentType) (*types.Comment, error) {
+	var commentID string
+	var err error  // Declare err here since it's used throughout
+	if userid == "" {
+		return nil, types.ErrUserNotFound
+	}
+	if body == "" {
+		return nil, types.ErrCommentNotPosted
+	}
+	// 1. get parentID
+	// 2. create a comment with postid
+	// 3. add new comment id to replies array of parent
 	if contentType == TypeComment {
+		logger.Debug().Msg("commenting on a comment")
 		parentComment, err := architcot.commentStore.GetById(ctx, parentid)
 		if err != nil {
-			return types.ErrCommentNotFound
+			return nil, types.ErrCommentNotFound
 		}
-		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
+		logger.Debug().Str("got comment id", parentid).Msg("commenting on a comment")
+		commentID, err = architcot.commentStore.InsertToDB(ctx, &types.Comment{
 			PostID:    parentComment.PostID,
 			Body:      body,
 			UserID:    userid,
 			CreatedAt: time.Now(),
 		})
 		if err != nil {
-			return types.ErrCommentNotPosted
+			return nil, types.ErrCommentNotPosted
 		}
-		return architcot.commentStore.AddReply(ctx, parentid, commentID)
+		logger.Debug().Str("new comment created", commentID).Msg("commenting on a comment")
+		err = architcot.commentStore.AddToRepliesArray(ctx, parentid, commentID)
+		if err != nil {
+			return nil, types.ErrCommentNotPosted
+		}
+		err = architcot.storyStore.AddCommentCount(ctx, parentid)
+		if err != nil {
+			return nil, types.ErrCommentNotPosted
+		}
 	} else {
-		commentID, err := architcot.commentStore.Create(ctx, &types.Comment{
+		commentID, err = architcot.commentStore.InsertToDB(ctx, &types.Comment{
 			PostID:    parentid,
 			Body:      body,
 			UserID:    userid,
 			CreatedAt: time.Now(),
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return architcot.storyStore.AddComment(ctx, parentid, commentID)
+		logger.Debug().Str("adding comment to post", parentid).Msg("service.. ading to post")
+		err = architcot.storyStore.AddToRepliesArray(ctx, parentid, commentID)
+if err != nil {
+			return nil, types.ErrCommentNotPosted
+		}
+		 err = architcot.storyStore.AddCommentCount(ctx, parentid)
+if err != nil {
+			return nil, types.ErrCommentNotPosted
+		}
+
 	}
+	logger.Debug().Str("got commentID", commentID).Msg("at service adding comment")
+	newComment, err := architcot.commentStore.GetById(ctx, commentID)
+	return newComment, err
 }
 
-func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, body string, title string) error {
-	return architcot.storyStore.Create(ctx, &types.Story{
-		ID: gonanoid.Must(4),
-		CreatedAt: time.Now(),
-		Body: body,
-		UserID: userid,
-		Title: title,
-	})
+func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, body string, title string) (*types.Story, error) {
+    story, err := architcot.storyStore.Create(ctx, &types.Story{
+        ID: gonanoid.Must(4),
+        CreatedAt: time.Now(),
+        Body: body,
+        UserID: userid,
+        Title: title,
+    })
+    return story, err
 }
 
 func (architcot *ArchitoctService) User(ctx context.Context, userid string) error {
-	logger.Debug().Str("userid", userid)
+	logger.Debug().Str("userid", userid).Msg("serviceUser")
 	_,  err := architcot.userStore.Create(ctx, userid)
 	return err
 }

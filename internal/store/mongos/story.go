@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"architoct/internal/logger"
 	"architoct/internal/types"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,10 +30,20 @@ func NewStoryStore(db *mongo.Database) *StoryStore {
 
 // OPERATIONS /////////////////////////////////////////////////////////////////
 // Core operations that we'll need for MVP
-func (s *StoryStore) Create(ctx context.Context, story *types.Story) error {
-	// For MVP, we'll do simple inserts without transactions
-	_, err := s.stories.InsertOne(ctx, story)
-	return err
+func (s *StoryStore) Create(ctx context.Context, story *types.Story) (*types.Story, error) {
+    result, err := s.stories.InsertOne(ctx, story)
+    if err != nil {
+        return nil, err
+    }
+    id, ok := result.InsertedID.(string)
+    if !ok {
+        return nil, err
+    }
+    createdStory, err := s.GetByID(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+    return createdStory, nil
 }
 
 func (s *StoryStore) GetByID(ctx context.Context, id string) (*types.Story, error) {
@@ -66,7 +77,7 @@ func (s *StoryStore) GetRecent(ctx context.Context, limit int64, page int64) ([]
 }
 
 // IncrementCommentCount updates comment count and adds comment ID
-func (s *StoryStore) AddComment(ctx context.Context, postID string, commentID string) error {
+func (s *StoryStore) AddToRepliesArray(ctx context.Context, postID string, commentID string) error {
     // add comment id to replies and increment reply count by 1
     id, err := primitive.ObjectIDFromHex(commentID)
 	if err != nil {
@@ -74,10 +85,19 @@ func (s *StoryStore) AddComment(ctx context.Context, postID string, commentID st
 	}
 	update := bson.M{
 		"$push": bson.M{"replies": id},
-		"$inc": bson.M{"reply_count": 1},
 	}
 	_, err = s.stories.UpdateOne(ctx, bson.M{"_id": postID}, update)
 
+	return err
+}
+
+func (s *StoryStore) AddCommentCount(ctx context.Context, postID string) error {
+	logger.Debug().Str("adding to story val", "1").Msg("storystore")
+	update := bson.M{
+		"$inc": bson.M{"reply_count": 1},
+	}
+	_, err := s.stories.UpdateOne(ctx, bson.M{"_id": postID}, update)
+	logger.Debug().Str("adding to story val", "1").Err(err).Msg("storystore")
 	return err
 }
 

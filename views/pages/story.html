@@ -10,7 +10,12 @@
     </div>
 
     <form id="newComment" class="p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
-          hx-post="/comment/story/{{.Story.ID}}" hx-include="[name='body']" hx-target="">
+          hx-post="/comment/story/{{.Story.ID}}" hx-include="[name='body']" hx-target="#newComment" hx-swap="afterend"
+            hx-on::after-request="if(event.detail.successful) {
+            this.reset();
+            this.querySelector('.pell-content').innerHTML = '';
+            this.querySelector('[name=body]').value = '';
+        }">
         {{template "pellEditor" dict "hxPost" "/comment/story/{{.ID}}" "Placeholder" "What's on your mind?"}}
     </form>
 

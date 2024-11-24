@@ -1,34 +1,35 @@
 {{ define "homeContent" }}
-    <div id="Navbar" class="flex justify-end w-full text-sm text-gray-400">
-        <div id="top" class="text-right">
-            <div class="text-gray-800 ">
-                Get top stories this:
-            </div>
-            <div class="flex gap-2 justify-end">
-                <button class="rounded-xl bg-purple-300 p-2 text-gray-800">Day</button>
-                <button class="p-2">Week</button>
-                <button class="p-2">Month</button>
-            </div>
-        </div>
+<!-- <div id="Navbar" class="flex justify-end w-full text-sm text-gray-400">
+     <div id="top" class="text-right">
+     <div class="text-gray-800 ">
+     Get top stories this:
+     </div>
+     <div class="flex gap-2 justify-end">
+     <button class="rounded-xl bg-purple-300 p-2 text-gray-800">Day</button>
+     <button class="p-2">Week</button>
+     <button class="p-2">Month</button>
+     </div>
+     </div>
+     </div> -->
+
+<form id="newPost"
+    class="p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+    hx-post="/story" hx-include="[name='title'], [name='body']" hx-target="#newPost" hx-swap="afterend"
+    hx-on::after-request="if(event.detail.successful) {
+            this.reset();
+            this.querySelector('.pell-content').innerHTML = '';
+            this.querySelector('[name=body]').value = '';
+        }">
+    <div id="title" class="flex gap-2 mb-2">
+        <input name="title" type="text" placeholder="Title" class="flex-1 border-none focus:ring-0 sm:text-sm" />
     </div>
 
-    <form id="newPost" class="p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
-                  hx-post="/story" hx-include="[name='title'], [name='body']" hx-target="">
-        <div id="title" class="flex gap-2 mb-2">
-            <input
-                name="title"
-                type="text"
-                placeholder="Title"
-                class="flex-1 border-none focus:ring-0 sm:text-sm"
-            />
-        </div>
+    {{template "pellEditor" dict "hxPost" "/story" "Placeholder" "What's on your mind?"}}
 
-        {{template "pellEditor" dict "hxPost" "/story" "Placeholder" "What's on your mind?"}}
+</form>
 
-    </form>
-
-    {{range .}}
-        {{template "singleStoryBlock" .}}
-    {{end}}
+{{range .}}
+{{template "singleStoryBlock" .}}
+{{end}}
 
 {{ end }}

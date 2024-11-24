@@ -57,6 +57,8 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 	e.POST("/comment/comment/:commentid", app.handlePostCcomment)
 	e.POST("/upvote/comment/:commentid", app.handlePostCVote)
 	e.POST("/comment/story/:storyid", app.handlePostScomment)
+	e.GET("/comments/replies/:commentid", app.handleGetCreplies)
+	e.GET("/load-editor/:commentid", app.handleGetEditor)
 }
 
 // TODO: verify if infinite scroll works fine
@@ -91,6 +93,21 @@ func (app *htmxHandler) handleGetStory(c echo.Context) error {
 	}
 }
 
+func (app *htmxHandler) handleGetEditor(c echo.Context) error {
+    commentID := c.Param("id")
+    return c.Render(http.StatusOK, "commentReplyForm", map[string]interface{}{
+        "ID": commentID,
+    })
+}
+
+func (app *htmxHandler) handleGetCreplies(c echo.Context) error {
+	comments, err := app.service.GetCommentReplies(c.Request().Context(), c.Param("commentid"), c.Get("userID").(string))
+	if err != nil {
+		return err
+	}
+	return c.Render(http.StatusOK, "comment-replies", comments)
+}
+
 // POST HANDLERS //////////////////////////////////////////////////////////////
 func (app *htmxHandler) handlePostSVote(c echo.Context) error {
 	cookie, err := c.Cookie("userID")
@@ -104,7 +121,7 @@ func (app *htmxHandler) handlePostSVote(c echo.Context) error {
 }
 
 func (app *htmxHandler) handlePostCVote(c echo.Context) error {
-	updatedComment, err := app.service.Upvote(c.Request().Context(), service.TypeComment, c.Param("commentid"), c.Param("userid"))
+	updatedComment, err := app.service.Upvote(c.Request().Context(), service.TypeComment, c.Param("commentid"), c.Get("userID").(string))
 	if err != nil {
 		return err
 	}
@@ -114,11 +131,19 @@ func (app *htmxHandler) handlePostCVote(c echo.Context) error {
 // not returning an HTMX here cause let them refresh
 // maybe for story we could just return sucess message or something
 func (app *htmxHandler) handlePostScomment(c echo.Context) error {
-	return app.service.Comment(c.Request().Context(), c.Param("storyid"), c.Param("userid"), c.FormValue("body"), service.TypeStory)
+	newComment, err := app.service.Comment(c.Request().Context(), c.Param("storyid"), c.Get("userID").(string), c.FormValue("body"), service.TypeStory)
+	if err != nil {
+		return err
+	}
+	return c.Render(http.StatusOK, "singleComment", newComment)
 }
 
 func (app *htmxHandler) handlePostCcomment(c echo.Context) error {
-	return app.service.Comment(c.Request().Context(), c.Param("commentid"), c.Param("userid"), c.FormValue("body"), service.TypeComment)
+	newComment, err := app.service.Comment(c.Request().Context(), c.Param("commentid"), c.Get("userID").(string), c.FormValue("body"), service.TypeComment)
+	if err != nil {
+		return err
+	}
+	return c.Render(http.StatusOK, "singleComment", newComment)
 }
 
 func (app *htmxHandler) handlePostStory(c echo.Context) error {
@@ -126,28 +151,23 @@ func (app *htmxHandler) handlePostStory(c echo.Context) error {
 	body := c.FormValue("body")
 	title := c.FormValue("title")
 
-	logger.Debug().
-		Str("user_id", userId).
-		Str("body", body).
-		Str("title", title).
-		Msg("Received request to create new story")
-
-	err := app.service.NewStory(c.Request().Context(), userId, body, title)
+	newStory, err := app.service.NewStory(c.Request().Context(), userId, body, title)
 	if err != nil {
 		return err
 	}
 	logger.Debug().Msg("Successfully created new story")
-	return nil
+
+	return c.Render(http.StatusOK, "singleStoryBlock", newStory)
 }
 
-func (app *htmxHandler) handleUser(c echo.Context) error {
+func (app *htmxHandler) handleUser(c echo.Context) (error) {
 	userId := c.Request().Header.Get("X-User-ID")
+	logger.Debug().Str("userID", userId).Msg("handleUser")
 	err := app.service.User(c.Request().Context(), userId)
 	if err != nil {
 		switch err {
-		// TODO: handle this send a message -- already TAKEN
 		case types.ErrUsernameTaken:
-			return nil
+			return types.ErrUsernameTaken
 		}
 	}
 	return nil
