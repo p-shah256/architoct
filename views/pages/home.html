@@ -1,37 +1,107 @@
 {{ define "homeContent" }}
-  <div id="Navbar" class="flex justify-end w-full text-sm text-gray-400">
-   <div id="top" class="text-right">
-       <div class="text-gray-800 ">
-           Get top stories this:
-       </div>
-       <div class="flex gap-2 justify-end">
-           <button class="rounded-xl bg-purple-300 p-2 text-gray-800">Day</button>
-           <button class="p-2">Week</button>
-           <button class="p-2">Month</button>
-       </div>
-   </div>
-</div>
+    <div id="Navbar" class="flex justify-end w-full text-sm text-gray-400">
+        <div id="top" class="text-right">
+            <div class="text-gray-800 ">
+                Get top stories this:
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button class="rounded-xl bg-purple-300 p-2 text-gray-800">Day</button>
+                <button class="p-2">Week</button>
+                <button class="p-2">Month</button>
+            </div>
+        </div>
+    </div>
 
-  <form id="newPost" class="p-3 border-2 border-dashed border-gray-800 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
-    <div id="titleUsername" class="flex gap-2 mb-2">
-        <input
-            type="text"
-            placeholder="Title"
-            class="flex-1 border-none focus:ring-0 sm:text-sm"
-        />
-    </div>
-    <div id="body" class="relative">
-        <textarea
-            placeholder="What's on your mind?"
-            class="w-full resize-none border-none focus:ring-0 sm:text-sm pr-20"
-            rows="4"
-        ></textarea>
-        <button
-            type="submit"
-            class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl px-4 py-1 hover:bg-violet-300 transition-colors"
-        >Post!</button>
-    </div>
-</form>
+    <!-- Add the required styles -->
+    <style>
+        .pell {
+            border: 0;
+            padding: 0;
+        }
+
+        .pell-content {
+            padding: 0;
+            min-height: 20px;
+        }
+
+        .pell-actionbar {
+            padding: 0;
+            margin-bottom: 8px;
+            background: transparent;
+        }
+
+        #editor-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #pell-editor {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pell-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+    </style>
+
+    <form id="newPost" class="p-3 border-2 border-dashed border-gray-800 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+        <div id="titleUsername" class="flex gap-2 mb-2">
+            <input
+                type="text"
+                placeholder="Title"
+                class="flex-1 border-none focus:ring-0 sm:text-sm"
+            />
+        </div>
+        <div id="body" class="relative">
+            <!-- Updated Pell Editor Wrapper -->
+            <div id="editor-container"
+                class="resize-y overflow-hidden border border-gray-300 rounded-md p-2 h-24 min-h-[50px] max-h-[200px] transition-all duration-200">
+                <div id="pell-editor"></div>
+            </div>
+            <button
+                type="submit"
+                class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl px-4 py-1 hover:bg-violet-300 transition-colors"
+            >
+                Post!
+            </button>
+        </div>
+        <input type="hidden" id="editor-output">
+    </form>
+
+    <script src="https://unpkg.com/pell"></script>
+    <script>
+        const editor = pell.init({
+            element: document.getElementById('pell-editor'),
+            onChange: (html) => {
+                const container = document.getElementById('editor-container');
+                const content = editor.content;
+                // Adjust container height based on content
+                const newHeight = Math.min(
+                    Math.max(content.scrollHeight + 40, 50),
+                    200
+                );
+                container.style.height = `${newHeight}px`;
+                document.getElementById('editor-output').value = html;
+            },
+            defaultParagraphSeparator: 'p',
+            styleWithCSS: false,
+            actions: ['bold', 'italic', 'underline', 'link']
+        });
+        // Hide toolbar initially
+        const toolbar = document.querySelector('.pell-actionbar');
+        toolbar.classList.add('hidden');
+        // Show toolbar on focus
+        editor.content.addEventListener('focus', () => {
+            toolbar.classList.remove('hidden');
+            toolbar.classList.add('flex');
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://unpkg.com/pell/dist/pell.min.css">
 
     {{range .}}
         {{template "singleStoryBlock" .}}

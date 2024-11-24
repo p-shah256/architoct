@@ -1,69 +1,64 @@
 {{ block "baseLayout" . }}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Architoct</title>
-    <link defer rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
+    <link defer rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📢</text></svg>">
     <link defer href="/assets/output.css" rel="stylesheet">
     <script src="/assets/htmx.min.js"></script>
     <style>
-    .bg-custom-lime {
-        background-color: #e4f8b4;
-    }
+        .bg-custom-lime {
+            background-color: #e4f8b4;
+        }
     </style>
 
     <script>
-        function generateOrGetUUID() {
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0,
-                        v = c == 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
-                localStorage.setItem('userId', userId);
-                htmx.ajax('POST', '/user/init', {
-                    headers: {'X-User-ID': userId},
-                    swap: 'none',  // Explicitly tell HTMX not to swap content
-                });
+        document.addEventListener('DOMContentLoaded', function () {
+            function setUserIdHeader(userId) {
+                document.body.setAttribute('hx-headers', JSON.stringify({
+                    'X-User-ID': userId
+                }));
             }
-            return userId;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const userId = generateOrGetUUID();
-            htmx.on('htmx:beforeRequest', function(evt) {
-                // console.log('Full event detail:', evt.detail);
-                if (evt.detail.requestConfig.verb === 'post') {
-                    const displayName = localStorage.getItem('userDisplayName');
-                    if (!displayName) {
-                        evt.preventDefault();
-                        const name = prompt('What should we engrave on your virtual drafting table? (100% anonymous, Mies van der Roast is taken)');
-                        if (name) {
-                            localStorage.setItem('userDisplayName', name);
-                            htmx.ajax('POST', '/user/name', {
-                                headers: {
-                                    'X-User-ID': userId,
-                                    'X-Display-Name': name,
-                                },
-                                swap: 'none',  // Explicitly tell HTMX not to swap content
-                            });
-                            htmx.trigger(evt.detail.elt, 'click');
-                        }
-                        return;
+            const userID = localStorage.getItem('userID');
+            if (userID) {
+                setUserIdHeader(userID);
+            }
+            htmx.on('htmx:beforeRequest', function (evt) {
+                if (evt.detail.requestConfig.verb === 'post' && !localStorage.getItem('userID')) {
+                    evt.preventDefault();
+                    const newID = prompt('What should we engrave on your virtual drafting table? (100% anonymous, Mies van der Roast is taken)');
+                    if (newID) {
+                        fetch('/user', {
+                            method: 'POST',
+                            headers: {
+                                'X-User-ID': newID,
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(response => {
+                            if (response.ok) {
+                                localStorage.setItem('userID', newID);
+                                setUserIdHeader(newID);
+                                htmx.trigger(evt.detail.elt, 'submit');
+                            } else {
+                                alert('Failed to set user ID. Please try again.');
+                            }
+                        }).catch(() => {
+                            alert('Failed to set user ID. Please try again.');
+                        });
                     }
-                    evt.detail.requestConfig.headers['X-User-ID'] = userId;
-                    evt.detail.requestConfig.headers['X-Display-Name'] = displayName;
-                }});
+                }
+            });
         });
     </script>
 </head>
 
-
 <!-- TODO: this is a mobile first thing so might have to modify this to work well on desktops -->
+
 <body id="background" class="flex flex-col justify-center w-full bg-background-gray">
 
     {{ template "headerBlock" . }}
@@ -72,16 +67,17 @@
     <!--like saying just pass in stories from the input into template--------->
 
     <div id="inside" class="text-gray-800 flex flex-col py-4 px-4 mt-28 max-w-5xl gap-4">
-    {{- if eq .PageType "home" }}
+        {{- if eq .PageType "home" }}
         {{ block "homeContent" .Data }}{{ end }}
-    {{ else if eq .PageType "story" }}
+        {{ else if eq .PageType "story" }}
         {{ block "storyContent" .Data }}{{ end }}
-    {{ else if eq .PageType "profile" }}
+        {{ else if eq .PageType "profile" }}
         {{ block "profileContent" .Data }}{{ end }}
-    {{ end -}}
+        {{ end -}}
     </div>
 
 </body>
+
 </html>
 {{ end }}
 
@@ -94,14 +90,14 @@
 
 
 
-
-
 {{ block "headerBlock" . }}
 <header>
-   <a href="/" class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-purple-500/40 via-purple-500/20 via-[60%] to-transparent">
-       <div id="header-inside" class="flex flex-col h-full gap-2 items-center justify-center max-w-5xl mx-auto py-2 px-5 align-middle">
-           <img rel="preload" src="/assets/Architoct.svg" alt="Logo" class="h-3/4 w-auto max-h-[10vh]" />
-       </div>
-   </a>
+    <a href="/"
+        class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-purple-500/40 via-purple-500/20 via-[60%] to-transparent">
+        <div id="header-inside"
+            class="flex flex-col h-full gap-2 items-center justify-center max-w-5xl mx-auto py-2 px-5 align-middle">
+            <img rel="preload" src="/assets/Architoct.svg" alt="Logo" class="h-3/4 w-auto max-h-[10vh]" />
+        </div>
+    </a>
 </header>
 {{ end }}

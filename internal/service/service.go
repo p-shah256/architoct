@@ -143,14 +143,8 @@ func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, 
 	})
 }
 
-func (architcot *ArchitoctService) User(ctx context.Context, userid string, username string) error {
-	if username=="" {
-		// slog.Info("createing a user", )
-		_,  err := architcot.userStore.Create(ctx, userid)
-		return err
-	} else {
-		// slog.Info("updating name,,,,,", )
-		_, err := architcot.userStore.UpdateName(ctx, userid, username)
-		return err
-	}
+func (architcot *ArchitoctService) User(ctx context.Context, userid string) error {
+	logger.Debug().Str("userid", userid)
+	_,  err := architcot.userStore.Create(ctx, userid)
+	return err
 }
