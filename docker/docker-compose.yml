@@ -2,6 +2,8 @@
 networks:
     architoct_network:
       name: architoct_network
+    traefik_network:
+      external: true
 
 
 services:
@@ -35,6 +37,7 @@ services:
       dockerfile: Dockerfile
     networks:
       - architoct_network
+      - traefik_network
     environment:
       - MONGO_URI=mongodb://admin:password123@architocts_db:27017
     ports:
@@ -56,6 +59,12 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.architoct.rule=Host(`architoct.shah256.dev`)"
+      - "traefik.http.routers.architoct.entrypoints=https"
+      - "traefik.http.routers.architoct.tls.certresolver=letsencrypt"
+      - "traefik.http.services.architoct.loadbalancer.server.port=42069"
 
 
   # promtail:
