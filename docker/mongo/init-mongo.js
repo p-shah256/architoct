@@ -42,8 +42,6 @@ db.createCollection('stories', {
         // METADATA (needs update frequently) -------------
         upvote_count: {
           bsonType: 'int',
-          minimum: 0,
-          default: 0
         },
         upvoted_by: {
           bsonType: 'array',
@@ -53,7 +51,6 @@ db.createCollection('stories', {
         reply_count: {
           bsonType: 'int',
           minimum: 0,
-          default: 0
         },
         // this just creates a breaking point as now you need multidoc transaction
         // AND harder to keep it consistent
@@ -85,7 +82,6 @@ db.createCollection('comments', {
         upvote_count: {
           bsonType: 'int',
           minimum: 0,
-          default: 0
         },
         upvoted_by: {
           bsonType: 'array',
@@ -98,26 +94,25 @@ db.createCollection('comments', {
           bsonType: 'array',
           maxItems: 100,  // Enforce limit
           items: {
-              bsonType: 'object',
-              required: ['_id', 'user_id', 'body', 'created_at'],
-              properties: {
-                _id: { bsonType: 'objectId' },
-                user_id: { bsonType: 'string' },
-                body: { bsonType: 'string' },
-                created_at: { bsonType: 'date' },
-                is_deleted: { bsonType: 'bool' },
-                upvote_count: {
-                  bsonType: 'int',
-                  minimum: 0,
-                  default: 0
-                },
-                upvoted_by: {
-                  bsonType: 'array',
-                  uniqueItems: true,
-                  items: { bsonType: 'string' }
-                }
+            bsonType: 'object',
+            required: ['_id', 'user_id', 'body', 'created_at'],
+            properties: {
+              _id: { bsonType: 'objectId' },
+              user_id: { bsonType: 'string' },
+              body: { bsonType: 'string' },
+              created_at: { bsonType: 'date' },
+              is_deleted: { bsonType: 'bool' },
+              upvote_count: {
+                bsonType: 'int',
+                minimum: 0,
+              },
+              upvoted_by: {
+                bsonType: 'array',
+                uniqueItems: true,
+                items: { bsonType: 'string' }
               }
             }
+          }
         }
       }
     }

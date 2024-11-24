@@ -2,7 +2,7 @@
     {{template "singleStoryBlock" .Story}}
 
     <div id="body" class="p-3" >
-        {{ .Story.Body }}
+        {{ .Story.Body | safehtml }}
     </div>
 
     <div class="font-bold text-text-primary bg-custom-lime p-3 w-fit rounded-xl">

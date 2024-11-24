@@ -17,41 +17,50 @@
         }
     </style>
 
+    <!-- SEND WITH EVERY REQUEST
+        cookies expire but as far as we use local storage we are fine -->
+    <script>
+        htmx.on('htmx:configRequest', function (evt) {
+            if (localStorage.getItem('userID')) {
+                document.cookie = `userID=${localStorage.getItem('userID')}; path=/; SameSite=None; Secure`;
+            }
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            function setUserIdHeader(userId) {
+            const existingUserId = localStorage.getItem('userID');
+            if (existingUserId) {
                 document.body.setAttribute('hx-headers', JSON.stringify({
-                    'X-User-ID': userId
+                    'X-User-ID': existingUserId
                 }));
-            }
-            const userID = localStorage.getItem('userID');
-            if (userID) {
-                setUserIdHeader(userID);
+                return;
             }
             htmx.on('htmx:beforeRequest', function (evt) {
-                if (evt.detail.requestConfig.verb === 'post' && !localStorage.getItem('userID')) {
-                    evt.preventDefault();
-                    const newID = prompt('What should we engrave on your virtual drafting table? (100% anonymous, Mies van der Roast is taken)');
-                    if (newID) {
-                        fetch('/user', {
-                            method: 'POST',
-                            headers: {
-                                'X-User-ID': newID,
-                                'Content-Type': 'application/json'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                localStorage.setItem('userID', newID);
-                                setUserIdHeader(newID);
-                                htmx.trigger(evt.detail.elt, 'submit');
-                            } else {
-                                alert('Failed to set user ID. Please try again.');
-                            }
-                        }).catch(() => {
-                            alert('Failed to set user ID. Please try again.');
-                        });
+                if (evt.detail.requestConfig.verb !== 'post') return;
+                if (localStorage.getItem('userID')) return;
+                evt.preventDefault();
+                const newID = prompt('What should we engrave on your virtual drafting table? (100% anonymous, Mies van der Roast is taken)');
+                if (!newID) return;
+                fetch('/user', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-ID': newID,
+                        'Content-Type': 'application/json'
                     }
-                }
+                }).then(response => {
+                    if (!response.ok) {
+                        alert('Failed to set user ID. Please try again.');
+                        return;
+                    }
+                    localStorage.setItem('userID', newID);
+                    document.body.setAttribute('hx-headers', JSON.stringify({
+                        'X-User-ID': newID
+                    }));
+                    htmx.trigger(evt.detail.elt, 'submit');
+                }).catch(() => {
+                    alert('Failed to set user ID. Please try again.');
+                });
             });
         });
     </script>

@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"architoct/internal/logger"
 	"architoct/internal/service"
 	"architoct/internal/types"
 )
@@ -46,17 +47,16 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 	e.GET("/story/:id", app.handleGetStory)
 
 	// user ops
-	e.POST("/user/init", app.handleUser)
-	e.POST("/user/name", app.handleUser)
+	e.POST("/user", app.handleUser)
 
 	// story ops
-	e.POST("/upvote/story/:storyid/user/:userid", app.handlePostSVote)
-	e.POST("/comment/story/:storyid/user/:userid", app.handlePostScomment)
+	e.POST("/upvote/story/:storyid", app.handlePostSVote)
+	e.POST("/comment/story/:storyid", app.handlePostScomment)
+	e.POST("/story", app.handlePostStory)
 
 	// comment ops
-	e.POST("/comment/comment/:commentid/user/:userid", app.handlePostCcomment)
-	e.POST("/upvote/comment/:commentid/user/:userid", app.handlePostCVote)
-	e.GET("/replies/comment/:commentid", app.handleGetCreplies)
+	e.POST("/comment/comment/:commentid", app.handlePostCcomment)
+	e.POST("/upvote/comment/:commentid", app.handlePostCVote)
 }
 
 // TODO: verify if infinite scroll works fine
@@ -77,6 +77,7 @@ func (app *htmxHandler) handleGetHome(c echo.Context) error {
 }
 
 func (app *htmxHandler) handleGetStory(c echo.Context) error {
+
 	story, err := app.service.GetStoryPage(c.Request().Context(), c.Param("id"))
 	if err != nil {
 		return err
@@ -91,14 +92,12 @@ func (app *htmxHandler) handleGetStory(c echo.Context) error {
 	}
 }
 
-// TODO: implement this
-func (app *htmxHandler) handleGetCreplies(c echo.Context) error {
-	return nil
-}
-
 // POST HANDLERS //////////////////////////////////////////////////////////////
 func (app *htmxHandler) handlePostSVote(c echo.Context) error {
-	updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("storyid"), c.Param("userid"))
+	cookie, err := c.Cookie("userID")
+	logger.Debug().Str("userid", cookie.Value).Msg("GetHome")
+	userID := cookie.Value
+	updatedStory, err := app.service.Upvote(c.Request().Context(), service.TypeStory, c.Param("storyid"), userID)
 	if err != nil {
 		return err
 	}
@@ -124,18 +123,30 @@ func (app *htmxHandler) handlePostCcomment(c echo.Context) error {
 }
 
 func (app *htmxHandler) handlePostStory(c echo.Context) error {
-	return app.service.NewStory(c.Request().Context(), c.Param("userid"), c.FormValue("body"), c.FormValue("title"))
+	userId := c.Request().Header.Get("X-User-ID")
+	body := c.FormValue("editor-content")
+	title := c.FormValue("title")
+
+	logger.Debug().
+		Str("user_id", userId).
+		Str("body", body).
+		Str("title", title).
+		Msg("Received request to create new story")
+
+	err := app.service.NewStory(c.Request().Context(), userId, body, title)
+	if err != nil {
+		return err
+	}
+	logger.Debug().Msg("Successfully created new story")
+	return nil
 }
 
-func (app *htmxHandler) handleUser(c echo.Context) error{
+func (app *htmxHandler) handleUser(c echo.Context) error {
 	userId := c.Request().Header.Get("X-User-ID")
-	// if not present it will be empty string .. indicating it is a create
-	// if present indicates update username
-    userName := c.Request().Header.Get("X-Display-Name")
-	err := app.service.User(c.Request().Context(), userId, userName)
+	err := app.service.User(c.Request().Context(), userId)
 	if err != nil {
-		switch err{
-		// TODO: handle this send a message
+		switch err {
+		// TODO: handle this send a message -- already TAKEN
 		case types.ErrUsernameTaken:
 			return nil
 		}

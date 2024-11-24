@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/matoous/go-nanoid/v2"
 )
 
 // ENUM TO KEEP things simple///////////////////////////////////////////////////
@@ -96,6 +97,7 @@ func (architcot *ArchitoctService) Upvote(ctx context.Context, contentType Conte
 		return updatedComment, err
 	} else {
 		updatedStory, err := architcot.storyStore.ToggleUpvote(ctx, id, userid)
+		updatedStory.SetUserSpecificData(userid)
 		return updatedStory, err
 	}
 }
@@ -136,6 +138,7 @@ func (architcot *ArchitoctService) Comment(ctx context.Context, parentid string,
 
 func (architcot *ArchitoctService) NewStory(ctx context.Context, userid string, body string, title string) error {
 	return architcot.storyStore.Create(ctx, &types.Story{
+		ID: gonanoid.Must(4),
 		CreatedAt: time.Now(),
 		Body: body,
 		UserID: userid,

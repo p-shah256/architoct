@@ -12,7 +12,6 @@ import (
 // User represents a user in the system
 type User struct {
 	ID        string    `bson:"_id"`
-	Name        string    `bson:"user_name,omitempty"`
 	CreatedAt time.Time `bson:"created_at,omitempty"`
 	LastLogin time.Time `bson:"last_login,omitempty"`
 }
@@ -32,6 +31,9 @@ type Story struct {
 	UpvotedBy   []string `bson:"upvoted_by,omitempty"` // user_ids
 	ReplyCount  int      `bson:"reply_count,omitempty"`
 	Replies     []string `bson:"replies,omitempty"` // comment_ids
+
+	// extra meta data user specific
+	HasUpvoted bool `bson:"-"`
 }
 
 // Comment represents a comment on a story
@@ -58,4 +60,14 @@ type Comment struct {
 type StoryPage struct {
 	Story Story
 	Comments []Comment
+}
+
+func (s *Story) SetUserSpecificData(userID string) {
+    for _, upvoterID := range s.UpvotedBy {
+        if upvoterID == userID {
+            s.HasUpvoted = true
+            return
+        }
+    }
+    s.HasUpvoted = false
 }
