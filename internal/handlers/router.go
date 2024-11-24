@@ -51,12 +51,12 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 
 	// story ops
 	e.POST("/upvote/story/:storyid", app.handlePostSVote)
-	e.POST("/comment/story/:storyid", app.handlePostScomment)
 	e.POST("/story", app.handlePostStory)
 
 	// comment ops
 	e.POST("/comment/comment/:commentid", app.handlePostCcomment)
 	e.POST("/upvote/comment/:commentid", app.handlePostCVote)
+	e.POST("/comment/story/:storyid", app.handlePostScomment)
 }
 
 // TODO: verify if infinite scroll works fine
@@ -66,7 +66,7 @@ func (app *htmxHandler) handleGetHome(c echo.Context) error {
 	if page == 0 {
 		page = 1
 	}
-	stories, err := app.service.GetHomeFeed(c.Request().Context(), page)
+	stories, err := app.service.GetHomeFeed(c.Request().Context(), page, c.Get("userID").(string))
 	if err != nil {
 		return err
 	}
@@ -77,8 +77,7 @@ func (app *htmxHandler) handleGetHome(c echo.Context) error {
 }
 
 func (app *htmxHandler) handleGetStory(c echo.Context) error {
-
-	story, err := app.service.GetStoryPage(c.Request().Context(), c.Param("id"))
+	story, err := app.service.GetStoryPage(c.Request().Context(), c.Param("id"), c.Get("userID").(string))
 	if err != nil {
 		return err
 	}
@@ -124,7 +123,7 @@ func (app *htmxHandler) handlePostCcomment(c echo.Context) error {
 
 func (app *htmxHandler) handlePostStory(c echo.Context) error {
 	userId := c.Request().Header.Get("X-User-ID")
-	body := c.FormValue("editor-content")
+	body := c.FormValue("body")
 	title := c.FormValue("title")
 
 	logger.Debug().

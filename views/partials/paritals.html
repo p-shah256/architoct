@@ -27,56 +27,37 @@
 </div>
 {{end}}
 
-
 {{ block "singleComment" . }}
-    <div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
-        <div id="comment-metadata-{{.ID}}" class="text-gray-400">
-            {{.UserID}} {{.TimeAgo}}
-        </div>
-        <div id="content-body-{{.ID}}" class="">
-            {{.Body}}
-        </div>
-        <div id="comment-metadata-{{.ID}}" class="flex justify-between items-center text-gray-400">
-            <div id="left" class="flex gap-4">
-                {{ template "commentUpvoteMarker" . }}
-                <button onclick="showReply('{{.ID}}')" class="text-gray-800 hover:text-gray-700 rounded-xl p-1 text-xs">
-                    🗨️ Reply
-                </button>
-            </div>
-        {{ if .Replies }}
-        <button class="text-gray-800 hover:text-gray-700 rounded-xl p-1 text-xs"
-                hx-target="#comment-replies-{{.ID}}" hx-trigger="click"
-                hx-get="/replies/comment/{{.ID}}" hx-swap="innerHTML show:top">
-                ➕ {{ .ReplyCount }} more replies
-        </button>
-        {{ end }}
-        </div>
-        <div id="comment-add-reply-{{.ID}}" style="display: none" class="relative">
-            <form class="relative" hx-post="/comment/comment/{{.ID}}/user/user123">
-                <textarea
-                    name="reply-body"
-                    placeholder="What would you add?"
-                    class="w-full resize-none border-none focus:ring-0 sm:text-sm pr-20 p-2"
-                    rows="4"
-                ></textarea>
-                <button type="submit"
-                    class="absolute bottom-2 right-2 bg-purple-200 rounded-2xl p-2 hover:bg-violet-300 transition-colors">
-                    Post
-                </button>
-            </form>
-        </div>
-
-        <div id="comment-replies-{{.ID}}" class="pl-4 hidden">
-            {{ template "comment-replies" . }}
-        </div>
-
+<div id="comment-{{.ID}}" class="flex flex-col gap-2 pl-4 py-2 border-l border-gray-700">
+    <div class="text-gray-400">
+        {{.UserID}} {{.TimeAgo}}
     </div>
+    {{.Body | safehtml }}
+    <div class="flex justify-between items-center text-gray-400">
+        <div class="flex gap-4">
+            {{ template "commentUpvoteMarker" . }}
+            <button onclick="toggleReply('{{.ID}}')" class="text-gray-800 hover:text-gray-700 rounded-xl p-1 text-xs">
+                🗨️ Reply
+            </button>
+        </div>
+    </div>
+    <form id="reply-form-{{.ID}}"
+        class="hidden p-3 border-2 border-dashed border-gray-400 rounded-2xl shadow-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+        hx-post="/comment/comment/{{.ID}}"
+        hx-include="[name='body']">
+        <!-- TODO: INPUTS INTO THIS ARE REDUNDATN -->
+        {{template "pellEditor" dict "hxPost" (print "/comment/story/" .ID)}}
+    </form>
+    <div id="replies-{{.ID}}" class="pl-4 hidden">
+        {{ template "comment-replies" . }}
+    </div>
+</div>
 
 <script>
-function showReply(id) {
-    const form = document.getElementById('comment-add-reply-' + id);
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-}
+    function toggleReply(id) {
+        const form = document.getElementById('reply-form-' + id);
+        form.classList.toggle('hidden');
+    }
 </script>
 {{ end }}
 

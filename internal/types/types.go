@@ -16,6 +16,7 @@ type User struct {
 	LastLogin time.Time `bson:"last_login,omitempty"`
 }
 
+// // comment /////////////////////////////////////////////////////////////////
 // Story represents a story/post in the system
 type Story struct {
 	// Story Components
@@ -36,6 +37,17 @@ type Story struct {
 	HasUpvoted bool `bson:"-"`
 }
 
+func (s *Story) SetUserSpecificData(userID string) {
+    for _, upvoterID := range s.UpvotedBy {
+        if upvoterID == userID {
+            s.HasUpvoted = true
+            return
+        }
+    }
+    s.HasUpvoted = false
+}
+
+// // comment /////////////////////////////////////////////////////////////////
 // Comment represents a comment on a story
 type Comment struct {
 	// Comment Data
@@ -53,21 +65,23 @@ type Comment struct {
 	UpvotedBy   []string `bson:"upvoted_by,omitempty"` // user_ids
 	ReplyCount  int      `bson:"reply_count,omitempty"`
 	Replies     []string `bson:"replies,omitempty"` // comment_ids
+
+	// extra meta data user specific
+	HasUpvoted bool `bson:"-"`
 }
 
+func (c *Comment) SetUserSpecificData(userID string) {
+    for _, upvoterID := range c.UpvotedBy {
+        if upvoterID == userID {
+            c.HasUpvoted = true
+            return
+        }
+    }
+    c.HasUpvoted = false
+}
 
 //SERVICE TYPES/////////////////////////////////////////////////////////////
 type StoryPage struct {
 	Story Story
 	Comments []Comment
-}
-
-func (s *Story) SetUserSpecificData(userID string) {
-    for _, upvoterID := range s.UpvotedBy {
-        if upvoterID == userID {
-            s.HasUpvoted = true
-            return
-        }
-    }
-    s.HasUpvoted = false
 }

@@ -53,6 +53,7 @@ func main() {
 
 	// Middleware for logging both info and errors
     e.Use(logger.Middleware)
+	e.Use(WithUser)
 
 	e.Renderer = handler.Templates
 	// e.Static("/views", "views")
@@ -61,4 +62,20 @@ func main() {
 
 	// Start server
 	e.Logger.Fatal(e.Start(":42069"))
+}
+
+
+func WithUser(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+        cookie, err := c.Cookie("userID")
+        if err == nil && cookie.Value != "" {
+            // logger.Debug().Str("userid", cookie.Value).Msg("User found in cookie")
+            c.Set("userID", cookie.Value)
+        } else {
+            logger.Debug().Msg("No user found in cookie")
+            c.Set("userID", "") // Set to nil instead of empty string
+        }
+
+        return next(c)
+    }
 }

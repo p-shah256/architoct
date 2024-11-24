@@ -50,19 +50,20 @@ func NewArchitoctService(s *mongos.StoryStore, c *mongos.CommentStore, u *mongos
 
 // PAGE GETS //////////////////////////////////////////////////////////////////////
 // TODO: add ability for infinite scrolling
-func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64) ([]types.Story, error) {
+func (architcot *ArchitoctService) GetHomeFeed(ctx context.Context, page int64, userid string) ([]types.Story, error) {
 	stories, err := architcot.storyStore.GetRecent(ctx, 20, page)
 	if err != nil {
 		return nil, err
 	}
 
 	for i := range stories {
+		stories[i].SetUserSpecificData(userid)
 		formatStory(&stories[i])
 	}
 	return stories, nil
 }
 
-func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string) (types.StoryPage, error) {
+func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string, userid string) (types.StoryPage, error) {
     requestedStory, err := architect.storyStore.GetByID(ctx, id)
     if err != nil {
         return types.StoryPage{}, err
@@ -79,10 +80,13 @@ func (architect *ArchitoctService) GetStoryPage(ctx context.Context, id string) 
 				Str("comment", requestedStory.Replies[i])
         }
         formatComment(comment)
+		comment.SetUserSpecificData(userid)
         comments = append(comments, *comment)
     }
-
+	requestedStory.SetUserSpecificData(userid)
     formatStory(requestedStory)
+	logger.Debug().Any("returning", *requestedStory).Msg("From getstorypage service")
+	logger.Debug().Any("returning", comments).Msg("From getstorypage service")
     return types.StoryPage{
         Story:    *requestedStory,
         Comments: comments,

@@ -1,0 +1,99 @@
+{{ define "pellEditor" }}
+<style>
+    .editor-container {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        height: 6rem;
+        min-height: 50px;
+        max-height: 200px;
+        transition: height 0.2s;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .pell-editor {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .pell-content {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 20px;
+    }
+    .pell-actionbar {
+        margin-bottom: 0.5rem;
+        display: none;
+    }
+    .pell-actionbar.active {
+        display: flex;
+    }
+    .post-button {
+        transition: opacity 0.2s;
+        opacity: 1;
+    }
+    .post-button.typing {
+        opacity: 0.2;
+    }
+</style>
+
+{{/* Generate unique IDs for this instance */}}
+{{$editorID := printf "editor-%s" (.hxPost | js)}}
+{{$contentID := printf "content-%s" (.hxPost | js)}}
+
+<div class="editor-container">
+    <div class="pell-editor" id="{{$editorID}}"></div>
+    <input type="hidden" name="body" id="{{$contentID}}">
+    <button type="submit" class="post-button absolute bottom-2 right-2 bg-purple-200 hover:bg-violet-300 rounded-2xl px-4 py-1 transition-colors">
+        Post!
+    </button>
+</div>
+
+<script src="https://unpkg.com/pell"></script>
+<link rel="stylesheet" href="https://unpkg.com/pell/dist/pell.min.css">
+
+<script>
+    (function() {
+        const editorElement = document.getElementById('{{$editorID}}');
+        const hiddenInput = document.getElementById('{{$contentID}}');
+
+        if (!editorElement.pell) {
+            const editor = pell.init({
+                element: editorElement,
+                onChange: html => {
+                    const content = editor.content;
+                    const container = content.closest('.editor-container');
+                    container.style.height = Math.min(
+                        Math.max(content.scrollHeight + 40, 50),
+                        200
+                    ) + 'px';
+                    hiddenInput.value = html;
+                },
+                actions: ['bold', 'italic', 'underline', 'link']
+            });
+
+            const container = editorElement.closest('.editor-container');
+            const toolbar = container.querySelector('.pell-actionbar');
+            const postButton = container.querySelector('.post-button');
+            let typingTimer;
+
+            editor.content.addEventListener('focus', () => {
+                toolbar.classList.add('active');
+            });
+
+            editor.content.addEventListener('keyup', () => {
+                postButton.classList.add('typing');
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    postButton.classList.remove('typing');
+                }, 1500);
+            });
+
+            editorElement.pell = editor;
+        }
+    })();
+</script>
+{{ end }}
