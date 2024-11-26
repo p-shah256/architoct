@@ -24,6 +24,7 @@ const (
 	PageTypeHome    = "home"
 	PageTypeStory   = "story"
 	PageTypeProfile = "profile"
+	PageTypeAbout = "about"
 )
 
 type htmxHandler struct {
@@ -48,6 +49,7 @@ func (app *htmxHandler) SetupRoutes(e *echo.Echo) {
 
 	// user ops
 	e.POST("/user", app.handleUser)
+	e.GET("/about", app.handleAbout)
 
 	// story ops
 	e.POST("/upvote/story/:storyid", app.handlePostSVote)
@@ -76,6 +78,18 @@ func (app *htmxHandler) handleGetHome(c echo.Context) error {
 		PageType: PageTypeHome,
 		Data:     stories,
 	})
+}
+
+
+func (app *htmxHandler) handleAbout(c echo.Context) error {
+if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, "aboutContent", nil)
+	} else {
+		return c.Render(http.StatusOK, "baseLayout", PageData{
+			PageType: PageTypeAbout,
+			Data:     nil,
+		})
+	}
 }
 
 func (app *htmxHandler) handleGetStory(c echo.Context) error {

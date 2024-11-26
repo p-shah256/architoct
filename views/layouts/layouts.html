@@ -75,14 +75,17 @@
     <!--so this passes into block count the exact same object that it got--------->
     <!--like saying just pass in stories from the input into template--------->
 
-    <div id="inside" class="text-gray-800 flex flex-col py-4 px-4 mt-28 max-w-5xl gap-4">
-        {{- if eq .PageType "home" }}
-        {{ block "homeContent" .Data }}{{ end }}
-        {{ else if eq .PageType "story" }}
-        {{ block "storyContent" .Data }}{{ end }}
-        {{ else if eq .PageType "profile" }}
-        {{ block "profileContent" .Data }}{{ end }}
-        {{ end -}}
+    <div id="inside" class="text-gray-800 flex flex-col py-4 px-4 mt-28 max-w-2xl mx-auto gap-4">
+        {{ template "navbar" . }}
+        <div id="insideContent" class="flex flex-col gap-4 w-full">
+            {{- if eq .PageType "home" }}
+            {{ block "homeContent" .Data }}{{ end }}
+            {{ else if eq .PageType "story" }}
+            {{ block "storyContent" .Data }}{{ end }}
+            {{ else if eq .PageType "about" }}
+            {{ block "aboutContent" .Data }}{{ end }}
+            {{ end -}}
+        </div>
     </div>
 
 </body>
@@ -91,22 +94,32 @@
 {{ end }}
 
 
-
-
-
-
-
-
+{{ block "navbar" . }}
+<div id="Navbar" class="flex justify-end items-end w-full text-sm text-gray-400">
+    <button id="about" class="rounded-xl bg-custom-lime p-2 text-gray-800" hx-trigger="click" hx-swap="innerHTML"
+        hx-target="#insideContent" hx-get="/about" hx-push-url="true">
+        About
+    </button>
+    <!-- <div id="top" class="text-right">
+            <div class="text-gray-800 ">
+                Get top stories this:
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button class="rounded-xl bg-custom-lime p-2 text-gray-800">Day</button>
+                <button class="p-2">Week</button>
+                <button class="p-2">Month</button>
+            </div>
+        </div> -->
+</div>
+{{ end }}
 
 
 {{ block "headerBlock" . }}
-<header>
-    <a href="/"
-        class="w-full fixed top-0 h-[15vh] bg-gradient-to-b from-purple-500/40 via-purple-500/20 via-[60%] to-transparent">
-        <div id="header-inside"
-            class="flex flex-col h-full gap-2 items-center justify-center max-w-5xl mx-auto py-2 px-5 align-middle">
-            <img rel="preload" src="/assets/Architoct.svg" alt="Logo" class="h-3/4 w-auto max-h-[10vh]" />
-        </div>
-    </a>
-</header>
+<a href="/"
+    class="w-full fixed top-0 h-[15vh] max-h-48 bg-gradient-to-b from-purple-500/40 via-purple-500/20 via-[60%] to-transparent">
+    <div id="header-inside"
+        class="flex h-full gap-2 items-start justify-center max-w-2xl mx-auto py-4 px-5 align-middle">
+        <img rel="preload" src="/assets/Architoct.svg" alt="Logo" class="h-3/4 md:h-1/2" />
+    </div>
+</a>
 {{ end }}

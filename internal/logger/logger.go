@@ -13,7 +13,7 @@ import (
 var L zerolog.Logger
 
 func SetupLogger(logPath string) error {
-    // zerolog.SetGlobalLevel(zerolog.InfoLevel)
+    zerolog.SetGlobalLevel(zerolog.InfoLevel)
     if err := os.MkdirAll(logPath, 0755); err != nil {
         return fmt.Errorf("failed to create log directory: %v", err)
     }
